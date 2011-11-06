@@ -5,6 +5,7 @@
 
 from puke.Error import *
 from puke.Task  import *
+from puke.File  import *
 
 VERSION = 0.1
 
@@ -89,6 +90,7 @@ def run():
     
     if not args:
         logging.error("No tasks to execute. Please choose from: ")
+        printTasks()
         sys.exit(1)
 
     for name in args:
@@ -103,7 +105,6 @@ def main():
 
     except Exception as error:
         sys.stderr.write("!!! %s\n" % error)
-        #raise error
         sys.exit(1)
         
     except KeyboardInterrupt:
