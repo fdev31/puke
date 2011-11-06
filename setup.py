@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 from setuptools import setup, find_packages
 import sys
@@ -7,11 +7,13 @@ major, minor = sys.version_info[:2]
 
 #if major < 3:
 #    raise Exception("Puke requires Python 3")
+import logging
 
 setup(
     name = "puke",
     version = "0.1",
-    packages = find_packages(),
+    packages = ['puke'],
+
     scripts = [
        'bin/puke',
        'bin/puke.js.compress',
@@ -20,15 +22,9 @@ setup(
 
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires = ['docutils>=0.3'],
+    install_requires = ['pyscss'],
 
-    package_data = {
-        # If any package contains *.txt or *.rst files, include them:
-        '': ['*.txt', '*.rst'],
-        # And include any *.msg files found in the 'hello' package, too:
-        'hello': ['*.msg'],
-    },
-
+  
     # metadata for upload to PyPI
     author = "Emmanuel Tabard",
     author_email = "manu@webitup.fr",
