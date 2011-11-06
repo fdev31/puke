@@ -82,7 +82,7 @@ def run():
             raise PukeError("No generate file found!")
 
     buildfile = open(script, "r")
-    retval = exec(buildfile.read(), globals())
+    retval = exec buildfile.read()
 
     #
     # Execute tasks
