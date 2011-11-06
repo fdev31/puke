@@ -81,8 +81,7 @@ def run():
         else:
             raise PukeError("No generate file found!")
 
-    buildfile = open(script, "r")
-    retval = exec buildfile.read()
+    retval = execfile(script)
 
     #
     # Execute tasks
