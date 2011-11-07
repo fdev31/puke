@@ -1,17 +1,17 @@
 import types
 import logging
 from puke.Error import *
-
+from puke.Console import *
 
 __tasks__ = {}
 
 def addTask(task):
-    logging.debug("Registering task: %s" % task.name)
+    console.debug("Registering task: %s" % task.name)
     __tasks__[task.name] = task
     
 def executeTask(name):
     if name in __tasks__:
-        logging.debug("Executing task: %s" % name)
+        console.header("-------------------------------------\n * Executing task: %s \n -------------------------------------" % name, 1)
         __tasks__[name]()
     else:
         raise PukeError("No such task: %s" % name)

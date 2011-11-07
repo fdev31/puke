@@ -8,6 +8,7 @@ from puke.Task  import *
 from puke.Tools  import *
 from puke.FileList import *
 from puke.Sed import *
+from puke.Console import *
 
 VERSION = 0.1
 
@@ -15,6 +16,9 @@ __all__ = ["main", "VERSION"]
 
 import sys, logging, os
 from optparse import OptionParser
+
+from colorama import *
+
 
 
 def run():
@@ -58,7 +62,7 @@ def run():
     else:
         console.setLevel(logging.INFO)
         
-    console.setFormatter(logging.Formatter('>>> %(message)s', '%H:%M:%S'))
+    console.setFormatter(logging.Formatter( ' %(message)s' + Style.RESET_ALL, '%H:%M:%S'))
     logging.getLogger().addHandler(console)
 
 

@@ -1,5 +1,6 @@
 import os, os.path, shutil, logging, sys, filecmp, stat
 from puke.FileList import *
+from puke.Console import *
 from scss import Scss
 
 CSS_COMPRESSOR = sys.argv[0] + '.css.compress'
@@ -19,7 +20,7 @@ def combine(in_files, out_file, verbose=False, replace = None):
 
     temp_file = os.path.join(builddir, '.temp')
 
-    logging.info( "- Combining files :")
+    console.header( "- Combining files :")
 
     temp = open(temp_file, 'w')
     for f in in_files:
@@ -43,10 +44,10 @@ def combine(in_files, out_file, verbose=False, replace = None):
         if infos:
             infos = "(%s)" % infos
 
-        logging.info('  + %s %s' % (f, infos))
+        console.info('  + %s %s' % (f, infos))
 
     temp.close()
-    logging.info( "  Generating %s" % out_file)
+    console.confirm( "  Generating %s" % out_file)
     copyfile(temp_file, out_file)
     os.remove(temp_file)
 
@@ -62,7 +63,7 @@ def minify(in_file, out_file = None, verbose=False):
 
     org_size = os.path.getsize(in_file)
 
-    logging.info('- Minifying %s (%.2f kB)' % (in_file, org_size / 1024.0))
+    console.header('- Minifying %s (%.2f kB)' % (in_file, org_size / 1024.0))
 
     if in_type == 'js':
         __minify_js(in_file, out_file + '.tmp', verbose)
@@ -75,10 +76,10 @@ def minify(in_file, out_file = None, verbose=False):
     new_size = os.path.getsize(out_file)
 
     
-    logging.info('  Original: %.2f kB' % (org_size / 1024.0))
-    logging.info('  Compressed: %.2f kB' % (new_size / 1024.0))
-    logging.info('  Reduction: %.1f%%' % (float(org_size - new_size) / org_size * 100))
-    logging.info('=> %s' % out_file)
+    console.info('  ~ Original: %.2f kB' % (org_size / 1024.0))
+    console.info('  ~ Compressed: %.2f kB' % (new_size / 1024.0))
+    console.confirm('  %s ( Reduction : %.1f%% )' % (out_file, (float(org_size - new_size) / org_size * 100)))
+
 
 def jslint(files, fix = False, strict = False, nojsdoc = False):
     if isinstance(files, FileList):
@@ -118,27 +119,28 @@ def deepcopy(file_list, folder):
 
     if isinstance(file_list, FileList):
         file_list = file_list.get()
-    elif isinstance(in_files, str):
+    elif isinstance(file_list, str):
         file_list = [file_list]
 
     stat = 0
-    logging.info( "- Deep copy to %s (%s files)" % (folder, len(file_list)))
+    console.header( "- copy to %s (%s files)" % (folder, len(file_list)))
     for file in file_list:
         dst_file = os.path.join(folder,os.path.basename(file))
         res = updatefile(file, dst_file)
 
         if res:
-            logging.info(' + %s' % file)
+            console.info(' + %s' % file)
             stat += 1
     
-    logging.info( " => %s files updated" % (stat))
+    console.confirm( "  %s files updated" % (stat))
 
     
 def copyfile(src, dst):
     """ Copy src file to dst file. Both should be filenames, not directories. """
     
     if not os.path.isfile(src):
-        raise Exception("No such file: %s" % src)
+        console.error("No such file: %s" % src)
+        return False
 
     # First test for existance of destination directory
     makedir(os.path.dirname(dst))
@@ -147,7 +149,7 @@ def copyfile(src, dst):
     try:
         shutil.copy2(src, dst)
     except IOError as ex:
-        logging.error("Could not write file %s: %s" % (dst, ex))
+        console.error("Could not write file %s: %s" % (dst, ex))
         
     return True
     
@@ -156,7 +158,8 @@ def updatefile(src, dst):
     """ Same as copyfile() but only do copying when source file is newer than target file """
     
     if not os.path.isfile(src):
-        raise Exception("No such file: %s" % src)
+        console.error("No such file: %s" % src)
+        return False
     
     try:
         dst_mtime = os.path.getmtime(dst)

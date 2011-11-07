@@ -22,7 +22,7 @@ setup(
 
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires = ['pyscss', 'closure_linter'],
+    install_requires = ['pyscss', 'closure_linter', 'colorama'],
     dependency_links = ['http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz'],
   
     # metadata for upload to PyPI
