@@ -91,14 +91,14 @@ def jslint(files, fix = False, strict = False, nojsdoc = False):
     if strict == True:
         options.append('--strict')
     
-    if nojsdoc == Tru:
+    if nojsdoc == True:
         options.append('--nojsdoc')
 
 
     if fix == True:
-        sh("fixjsstyle "  + ' '.join(options) +  ' '.join(files))
+        sh("fixjsstyle %s %s "  % (  ' '.join(options) , ' '.join(files)))
     else:
-        sh("gjslint " + ' '.join(options) + ' '.join(files))
+        sh("gjslint %s %s "  % (  ' '.join(options) , ' '.join(files)))
 
 def sh (command):
     os.system(command)

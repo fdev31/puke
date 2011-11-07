@@ -31,9 +31,7 @@ setup(
     description = "Puke is a straightforward build system",
     license = "http://www.apache.org/licenses/LICENSE-2.0",
     keywords = "build system python",
-    url = 'http://github.com/roxee/puke',   # project home page, if any
-
-    # could also include long_description, download_url, classifiers, etc.
+    url = 'http://github.com/roxee/puke',
 )
 
 
