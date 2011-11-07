@@ -7,7 +7,7 @@ JS_COMPRESSOR = sys.argv[0] + '.js.compress'
 
 
 def combine(in_files, out_file, verbose=False):
-    
+
     if isinstance(in_files, FileList):
         in_files = in_files.get()
     elif isinstance(in_files, str):
@@ -27,6 +27,7 @@ def combine(in_files, out_file, verbose=False):
 
         fh = open(f)
         data = fh.read() + '\n'
+        data.replace('$TOTO$', 'coincoin')
         fh.close()
 
         if __get_ext(f) == 'scss':

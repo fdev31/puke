@@ -13,11 +13,16 @@ class FileList:
 			self.__filter = "%s|(%s)" % (self.__filter, fnmatch.translate(tmp_f))
 		
 		self.__filter = self.__filter.strip('|')
-
-		print self.__filter
 		self.__filter = re.compile(self.__filter)
-		self.__exclude = exclude
 		
+		self.__exclude = ""
+		for tmp_f in exclude.split(','):
+			tmp_f = tmp_f.strip(' ')
+			self.__exclude = "%s|(%s)" % (self.__exclude, fnmatch.translate(tmp_f))
+		
+		self.__filter = self.__filter.strip('|')
+		self.__filter = re.compile(self.__filter)
+
 		self.__explore(dir)
 	
 	def get (self):
@@ -30,6 +35,6 @@ class FileList:
 	        
 	        if os.path.isdir(nfile):
 	            self.__explore(nfile)
-	        elif self.__filter.match(file) and not fnmatch.fnmatch(file, self.__exclude):
+	        elif self.__filter.match(file) and not self.__exclude.match(file):
 	        	self.__list.append(nfile)
 	        
