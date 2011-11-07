@@ -116,7 +116,7 @@ def jsdoc(files, folder):
         files = [files]
 
     jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
-    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/puke  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
+    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/puke -a  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
 
     if output:
         console.fail(output)
