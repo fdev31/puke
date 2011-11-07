@@ -109,12 +109,11 @@ def main():
         run()
 
     except Exception as error:
-        sys.stderr.write("!!! %s\n" % error)
-        raise error
+        console.fail("\n\n :puke: \n PUKE %s\n" % error)
         sys.exit(1)
         
     except KeyboardInterrupt:
-        sys.stderr.write("Build interrupted!\n")
+        console.warn("\n\n :puke: \nBuild interrupted!\n")
         sys.exit(2)
         
     sys.exit(0)

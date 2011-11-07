@@ -1,4 +1,4 @@
-import logging, sys
+import logging, sys, os
 from colorama import *
 
 init(autoreset = True)
@@ -21,7 +21,8 @@ class console:
 
 	@staticmethod
 	def warn(msg):
-
+		
+		msg = console.pukefactory(msg)
 		logging.warning( Fore.YELLOW + Style.BRIGHT + msg)
 	
 	@staticmethod
@@ -44,7 +45,23 @@ class console:
 
 	@staticmethod
 	def fail(msg):
+		msg = console.pukefactory(msg)
 		console.error(" /!\\ BUILD FAIL : " + msg)
 		sys.exit(1)
+
+	@staticmethod
+	def pukefactory(msg):
+		if ':puke:' in msg:
+			try:
+				f = open(os.path.join(os.path.dirname( __file__ ), 'datas','decoration', 'puke.txt'), 'r')
+				msg = msg.replace(':puke:', '\n' + f.read())
+				f.close()
+
+				return msg
+			except Exception:
+				pass
+		
+		return msg
+
 
 
