@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: puke
+Version: 0.1
+Summary: Puke is a straightforward build system
+Home-page: http://github.com/roxee/puke
+Author: Emmanuel Tabard
+Author-email: manu@webitup.fr
+License: http://www.apache.org/licenses/LICENSE-2.0
+Description: UNKNOWN
+Keywords: build system python
+Platform: UNKNOWN

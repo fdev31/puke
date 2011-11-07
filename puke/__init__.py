@@ -5,7 +5,8 @@
 
 from puke.Error import *
 from puke.Task  import *
-from puke.File  import *
+from puke.Tools  import *
+from puke.FileList import *
 
 VERSION = 0.1
 
@@ -104,6 +105,7 @@ def main():
 
     except Exception as error:
         sys.stderr.write("!!! %s\n" % error)
+        raise error
         sys.exit(1)
         
     except KeyboardInterrupt:
