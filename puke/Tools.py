@@ -110,7 +110,7 @@ def deepcopy(file_list, folder):
         file_list = [file_list]
 
     stat = 0
-    print "- Deep copy to %s (%s files)" % (folder, len(file_list))
+    logging.info( "- Deep copy to %s (%s files)" % (folder, len(file_list)))
     for file in file_list:
         dst_file = os.path.join(folder,os.path.basename(file))
         res = updatefile(file, dst_file)

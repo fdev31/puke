@@ -38,6 +38,6 @@ class FileList:
 	        
 	        if os.path.isdir(nfile):
 	            self.__explore(nfile)
-	        elif self.__filter.match(file) and not self.__exclude.match(file):
+	        elif self.__filter.match(nfile) and not self.__exclude.match(nfile):
 	        	self.__list.append(nfile)
 	        
