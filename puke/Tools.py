@@ -102,9 +102,15 @@ def jslint(files, fix = False, strict = False, nojsdoc = False):
         sh("gjslint %s %s "  % (  ' '.join(options) , ' '.join(files)))
 
 def sh (command):
-    os.system(command)
-
-
+    console.header(' - exec "%s" ' % command)
+    result = ""
+    p = os.popen(command)
+    for line in p.readlines():
+        result += line + '\n'
+        console.info( '   ' +line)
+   
+    p.close()
+    return result
 
 def makedir(dirname):
     """ Creates missing hierarchy levels for given directory """
