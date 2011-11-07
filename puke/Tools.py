@@ -80,16 +80,25 @@ def minify(in_file, out_file = None, verbose=False):
     logging.info('  Reduction: %.1f%%' % (float(org_size - new_size) / org_size * 100))
     logging.info('=> %s' % out_file)
 
-def jslint(files, fix = False):
+def jslint(files, fix = False, strict = False, nojsdoc = False):
     if isinstance(files, FileList):
         files = files.get()
     elif isinstance(files, str):
         files = [files]
 
-    sh("gjslint " + ' '.join(files))
+    options = []
+
+    if strict == True:
+        options.append('--strict')
+    
+    if nojsdoc == Tru:
+        options.append('--nojsdoc')
+
 
     if fix == True:
-        sh("fixjsstyle " + ' '.join(files))
+        sh("fixjsstyle "  + ' '.join(options) +  ' '.join(files))
+    else:
+        sh("gjslint " + ' '.join(options) + ' '.join(files))
 
 def sh (command):
     os.system(command)
