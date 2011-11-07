@@ -78,9 +78,9 @@ def minify(in_file, out_file = None, verbose=False):
 def jslint(files):
     if isinstance(files, FileList):
         files = files.get()
-    elif isinstance(in_files, str):
+    elif isinstance(files, str):
         files = [files]
-        
+
     sh("gjslint " + ' '.join(files))
 
 def sh (command):
