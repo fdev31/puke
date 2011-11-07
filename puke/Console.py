@@ -1,4 +1,4 @@
-import logging
+import logging, sys
 from colorama import *
 
 init(autoreset = True)
@@ -41,5 +41,10 @@ class console:
 			color = Fore.CYAN
 
 		logging.info(color + Style.BRIGHT + msg )
+
+	@staticmethod
+	def fail(msg):
+		console.error(" /!\\ BUILD FAIL : " + msg)
+		sys.exit(1)
 
 

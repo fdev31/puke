@@ -81,33 +81,64 @@ def minify(in_file, out_file = None, verbose=False):
     console.confirm('  %s ( Reduction : %.1f%% )' % (out_file, (float(org_size - new_size) / org_size * 100)))
 
 
-def jslint(files, fix = False, strict = False, nojsdoc = False):
+def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
     if isinstance(files, FileList):
         files = files.get()
     elif isinstance(files, str):
         files = [files]
 
     options = []
+    command = ""
 
     if strict == True:
         options.append('--strict')
     
     if nojsdoc == True:
         options.append('--nojsdoc')
+    
+    
 
 
     if fix == True:
-        sh("fixjsstyle %s %s "  % (  ' '.join(options) , ' '.join(files)))
+        command = "fixjsstyle %s %s "  % (  ' '.join(options) , ' '.join(files))
     else:
-        sh("gjslint %s %s "  % (  ' '.join(options) , ' '.join(files)))
+        command = "gjslint %s %s "  % (  ' '.join(options) , ' '.join(files))
+    
+    if relax == True:
+        command += ' | grep -v "Line too long" | grep -v "Invalid JsDoc tag"'
+    
+    sh(command)
 
-def sh (command):
-    console.header(' - exec "%s" ' % command)
+def jsdoc(files, output):
+    if isinstance(files, FileList):
+        files = files.get()
+    elif isinstance(files, str):
+        files = [files]
+
+    jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
+    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/puke  %s" % (jsdoc, jsdoc, output, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
+
+    if output:
+        console.fail(output)
+    
+    console.confirm('  Doc generated in %s' % output)
+
+def sh (command, header = None, output = True):
+    if not header:
+        header = 'exec "%s" ' % command
+    else:
+        console.debug(command)
+
+    console.header(' - '+header)
+    
     result = ""
     p = os.popen(command)
     for line in p.readlines():
+
         result += line + '\n'
-        console.info( '   ' +line)
+
+        if output:
+            console.info( '   ' +line)
    
     p.close()
     return result
@@ -218,5 +249,10 @@ def __minify_js(in_file, out_file, verbose):
 
     os.system('java -jar "%s" %s' % (JS_COMPRESSOR,
                                           ' '.join(options)))
+
+def __get_datas_path():
+    return os.path.join(os.path.dirname( __file__ ), 'datas')
+
+
 
 

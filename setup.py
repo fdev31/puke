@@ -32,6 +32,7 @@ setup(
     license = "http://www.apache.org/licenses/LICENSE-2.0",
     keywords = "build system python",
     url = 'http://github.com/roxee/puke',
+    include_package_data = True
 )
 
 
