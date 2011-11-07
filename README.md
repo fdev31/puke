@@ -142,7 +142,7 @@ Call system:
 
 Get FileList stats:
 
-`minify(list, title = "JS Stats")`
+`stats(list, title = "JS Stats")`
 
 <pre>
  - JS stats :
