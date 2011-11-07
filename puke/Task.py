@@ -11,7 +11,7 @@ def addTask(task):
     
 def executeTask(name):
     if name in __tasks__:
-        console.header("-------------------------------------\n * Executing task: %s \n -------------------------------------" % name, 1)
+        console.header("-------------------------------------\n * Executing task: %s (%s) \n -------------------------------------" % (name, __tasks__[name].desc), 1)
         __tasks__[name]()
     else:
         raise PukeError("No such task: %s" % name)
