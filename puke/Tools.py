@@ -6,7 +6,7 @@ CSS_COMPRESSOR = sys.argv[0] + '.css.compress'
 JS_COMPRESSOR = sys.argv[0] + '.js.compress'
 
 
-def combine(in_files, out_file, verbose=False):
+def combine(in_files, out_file, verbose=False, replace = None):
 
     if isinstance(in_files, FileList):
         in_files = in_files.get()
@@ -27,7 +27,11 @@ def combine(in_files, out_file, verbose=False):
 
         fh = open(f)
         data = fh.read() + '\n'
-        data.replace('$TOTO$', 'coincoin')
+
+        if replace:
+            for k in replace.keys():
+                data = data.replace(k, replace.get(k))
+
         fh.close()
 
         if __get_ext(f) == 'scss':
@@ -87,31 +91,6 @@ def jslint(files):
 def sh (command):
     os.system(command)
 
-def __minify_js(in_file, out_file, verbose):
-    options = ['--js %s' % in_file,
-               '--js_output_file %s' % out_file,
-               '--warning_level QUIET']
-
-    os.system('java -jar "%s" %s' % (JS_COMPRESSOR,
-                                          ' '.join(options)))
-
-def __minify_css(in_file, out_file, verbose):
-    options = ['-o "%s"' % out_file,
-               '--type css']
-
-    if verbose:
-        options.append('-v')
-
-    os.system('java -jar "%s" %s %s' % (CSS_COMPRESSOR,
-                                          ' '.join(options), in_file))
-
-def __get_ext(filename):
-    return filename.split('.')[-1]
-
-
-def __parse_scss(payload):
-    css = Scss()
-    return css.compile(payload)
 
 
 def makedir(dirname):
@@ -122,6 +101,25 @@ def makedir(dirname):
         
     if not os.path.exists(dirname):
         os.makedirs(dirname)
+
+def deepcopy(file_list, folder):
+
+    if isinstance(file_list, FileList):
+        file_list = file_list.get()
+    elif isinstance(in_files, str):
+        file_list = [file_list]
+
+    stat = 0
+    print "- Deep copy to %s (%s files)" % (folder, len(file_list))
+    for file in file_list:
+        dst_file = os.path.join(folder,os.path.basename(file))
+        res = updatefile(file, dst_file)
+
+        if res:
+            logging.info(' + %s' % file)
+            stat += 1
+    
+    logging.info( " => %s files updated" % (stat))
 
     
 def copyfile(src, dst):
@@ -172,3 +170,32 @@ def writefile(dst, content):
     handle = open(dst, mode="w", encoding="utf-8")
     handle.write(content)
     handle.close()
+
+
+def __minify_css(in_file, out_file, verbose):
+    options = ['-o "%s"' % out_file,
+               '--type css']
+
+    if verbose:
+        options.append('-v')
+
+    os.system('java -jar "%s" %s %s' % (CSS_COMPRESSOR,
+                                          ' '.join(options), in_file))
+
+def __get_ext(filename):
+    return filename.split('.')[-1]
+
+
+def __parse_scss(payload):
+    css = Scss()
+    return css.compile(payload)
+
+def __minify_js(in_file, out_file, verbose):
+    options = ['--js %s' % in_file,
+               '--js_output_file %s' % out_file,
+               '--warning_level QUIET']
+
+    os.system('java -jar "%s" %s' % (JS_COMPRESSOR,
+                                          ' '.join(options)))
+
+

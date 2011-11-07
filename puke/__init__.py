@@ -7,6 +7,7 @@ from puke.Error import *
 from puke.Task  import *
 from puke.Tools  import *
 from puke.FileList import *
+from puke.Sed import *
 
 VERSION = 0.1
 
