@@ -140,6 +140,17 @@ Call system:
 
 `sh("pwd")`
 
+Get FileList stats:
+
+`minify(list, title = "JS Stats")`
+
+<pre>
+ - JS stats :
+   ~ Files : 65
+   ~ Lines : 23477  (361 per file)
+   ~ Size : 1.8KB (28.0bytes per file)
+</pre>
+
 Perform in-file pattern replacement:
 
 <pre>

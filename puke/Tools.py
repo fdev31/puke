@@ -1,4 +1,4 @@
-import os, os.path, shutil, logging, sys, filecmp, stat
+import os, os.path, shutil, logging, sys, filecmp, stat, re
 from puke.FileList import *
 from puke.Console import *
 from scss import Scss
@@ -223,6 +223,35 @@ def writefile(dst, content):
     handle.write(content)
     handle.close()
 
+def stats(file_list, title = ""):
+    if isinstance(file_list, FileList):
+        file_list = file_list.get()
+    elif isinstance(file_list, str):
+        file_list = [file_list]
+
+    size = __exec("du %s | cut  -f1 |(tr '\n' '+'; echo 0) | bc" % ' '.join(file_list))
+
+    try:
+        size = int(size)
+    except Exception:
+        return 0
+
+    lines = __exec("wc -l %s | tail -1" % ' '.join(file_list))
+    lines =  re.findall(r'\d+(?:\.\d+)?', lines)
+    if len(lines):
+        lines = int(lines.pop())
+    else:
+        lines = 0
+    
+    if not title:
+        title = "Stats on files"
+
+    console.header(" - %s :" % title)
+    console.info(  "   ~ Files : %s" % len(file_list))
+    console.info(  "   ~ Lines : %s  (%s per file)" % (lines, (lines / len(file_list))))
+    console.info(  "   ~ Size : %s (%s per file)" % (hsizeof(size), hsizeof((size / len(file_list)))))
+    console.info("")
+
 
 def __minify_css(in_file, out_file, verbose):
     options = ['-o "%s"' % out_file,
@@ -254,5 +283,24 @@ def __get_datas_path():
     return os.path.join(os.path.dirname( __file__ ), 'datas')
 
 
+def __exec(command):
+    result = ""
+    p = os.popen(command)
+    for line in p.readlines():
+        result += line + '\n'
+   
+    p.close()
 
+    return result
+
+def hsizeof(num):
+    try:
+        num = int(num)
+    except Exception:
+        return 0
+    
+    for x in ['bytes','KB','MB','GB','TB']:
+        if num < 1024.0:
+            return "%3.1f%s" % (num, x)
+        num /= 1024.0
 
