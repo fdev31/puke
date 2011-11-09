@@ -8,6 +8,13 @@ __tasks__ = {}
 def addTask(task):
     console.debug("Registering task: %s" % task.name)
     __tasks__[task.name] = task
+
+
+def hasDefault():
+    if 'default' not in __tasks__:
+        return False
+    
+    return True
     
 def executeTask(name):
     if name in __tasks__:

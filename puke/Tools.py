@@ -22,9 +22,9 @@ def combine(in_files, out_file, verbose=False, replace = None):
 
     console.header( "- Combining files :")
 
-    temp = open(temp_file, 'w')
+    combined = "@option compress: no;"
+
     for f in in_files:
-        infos = ""
 
         fh = open(f)
         data = fh.read() + '\n'
@@ -34,22 +34,16 @@ def combine(in_files, out_file, verbose=False, replace = None):
                 data = data.replace(k, replace.get(k))
 
         fh.close()
+   
+        console.info('  + %s ' % (f))
 
-        if __get_ext(f) == 'scss':
-            data = __parse_scss(data)
-            infos = "SCSS OK"
+        combined += data
+        
 
-        temp.write(data)
+    data = __parse_scss(combined)
 
-        if infos:
-            infos = "(%s)" % infos
-
-        console.info('  + %s %s' % (f, infos))
-
-    temp.close()
     console.confirm( "  Generating %s" % out_file)
-    copyfile(temp_file, out_file)
-    os.remove(temp_file)
+    writefile(out_file, data)
 
 def minify(in_file, out_file = None, verbose=False):
 
@@ -219,7 +213,7 @@ def writefile(dst, content):
     makedir(os.path.dirname(dst))
     
     # Open file handle and write
-    handle = open(dst, mode="w", encoding="utf-8")
+    handle = open(dst, mode="w")
     handle.write(content)
     handle.close()
 

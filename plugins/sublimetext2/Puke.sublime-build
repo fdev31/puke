@@ -1,0 +1,9 @@
+{
+	"cmd": ["/usr/local/share/python/puke"],
+	"selector": "source.python",
+	"working_dir": "${folder}",
+	"shell" : true,
+	"env" : { "NOCOLOR" : "ok"},
+	"selector": "pukefile, pukeFile, pukefile, pukefile.py, pukeFile.py, pukefile.py"
+}
+

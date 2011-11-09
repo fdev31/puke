@@ -31,6 +31,7 @@ def run():
     parser = OptionParser()
     parser.add_option("-q", "--quiet", action="store_false", dest="verbose", help="don't print status messages to stdout")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="print more detailed status messages to stdout")
+    parser.add_option("-t", "--tasks",action="store_true",  dest="list_tasks", help="list tasks")
     parser.add_option("-l", "--log", dest="logfile", help="Write debug messages to given logfile")
     parser.add_option("-f", "--file", dest="file", help="Use the given build script")
 
@@ -61,10 +62,13 @@ def run():
         console.setLevel(logging.WARN)
     else:
         console.setLevel(logging.INFO)
-        
-    console.setFormatter(logging.Formatter( ' %(message)s' + Style.RESET_ALL, '%H:%M:%S'))
-    logging.getLogger().addHandler(console)
+    
+    if os.environ.get("NOCOLOR"):
+        console.setFormatter(logging.Formatter( ' %(message)s' , '%H:%M:%S'))
+    else:
+        console.setFormatter(logging.Formatter( ' %(message)s' + Style.RESET_ALL, '%H:%M:%S'))
 
+    logging.getLogger().addHandler(console)
 
     #
     # Find and execute build script
@@ -92,15 +96,29 @@ def run():
     #
     # Execute tasks
     #
-    
-    if not args:
+
+
+    if options.list_tasks:
         logging.error("No tasks to execute. Please choose from: ")
         printTasks()
         sys.exit(1)
+    
+    try:
+        args = args.strip()
+    except:
+        pass
+
+    if not args:
+        if hasDefault():
+            executeTask('default')
+        else:
+            logging.error("No tasks to execute. Please choose from: ")
+            printTasks()
+            sys.exit(1)
 
     for name in args:
         if not os.path.basename(name) in pukefiles:
-            executeTask(name)
+            executeTask(name.strip())
         
         
 

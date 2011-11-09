@@ -8,7 +8,10 @@ class console:
 
 	@staticmethod
 	def log(msg):
-		logging.info( Style.BRIGHT + msg)
+		if os.environ.get("NOCOLOR"):
+			logging.info(  msg)
+		else:
+			logging.info( Style.BRIGHT + msg)
 	
 	@staticmethod
 	def info(msg):
@@ -16,22 +19,33 @@ class console:
 
 	@staticmethod
 	def debug(msg):
-
-		logging.debug( Back.BLUE +  msg )
+		if os.environ.get("NOCOLOR"):
+			logging.debug( msg )
+		else:
+			logging.debug( Back.BLUE +  msg )
 
 	@staticmethod
 	def warn(msg):
 		
 		msg = console.pukefactory(msg)
-		logging.warning( Fore.YELLOW + Style.BRIGHT + msg)
+		if os.environ.get("NOCOLOR"):
+			logging.warning(  msg)
+		else:
+			logging.warning( Fore.YELLOW + Style.BRIGHT + msg)
 	
 	@staticmethod
 	def error(msg):
-		logging.error( Back.RED + Style.BRIGHT + msg)
+		if os.environ.get("NOCOLOR"):
+			logging.error(  msg)
+		else:
+			logging.error( Back.RED + Style.BRIGHT + msg)
 
 	@staticmethod
 	def confirm(msg):
-		logging.info(Fore.GREEN + Style.BRIGHT + msg )
+		if os.environ.get("NOCOLOR"):
+			logging.info(msg )
+		else:
+			logging.info(Fore.GREEN + Style.BRIGHT + msg )
 	
 	@staticmethod
 	def header(msg, level = 2):
@@ -40,8 +54,11 @@ class console:
 			color = Fore.MAGENTA
 		else:
 			color = Fore.CYAN
-
-		logging.info(color + Style.BRIGHT + msg )
+		
+		if os.environ.get("NOCOLOR"):
+			logging.info(msg )
+		else:
+			logging.info(color + Style.BRIGHT + msg )
 
 	@staticmethod
 	def fail(msg):
