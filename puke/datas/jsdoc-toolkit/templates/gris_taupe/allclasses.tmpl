@@ -1,0 +1,17 @@
+<header role="index">
+	<h2>Classes</h2>
+    <form action="#" role="search">
+		<input type="text" />
+    	<a href="#"></a>
+    </form>
+	<nav role="navigation">
+		<ul>
+			<for each="thisClass" in="data">
+			<li>{!
+				output += new Link().toClass(thisClass.alias);
+			!}</li>
+			</for>
+		</ul>
+	</nav>
+</header>
+

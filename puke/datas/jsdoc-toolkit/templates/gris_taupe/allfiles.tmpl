@@ -1,0 +1,68 @@
+{+include("static/boiler.html")+}
+	<title>Roxee Core Library Reference Documentation - File Index</title>
+</head>
+	
+<body>
+	{+include("static/header.html")+}
+	
+	{+publish.classesIndex+}
+
+	<article role="main">
+		<h1>File Index</h1>
+		<for each="item" in="data">
+		<section>
+			<h2>{+new Link().toSrc(item.alias).withText(item.name)+}</h2>
+
+			<details>
+				<summary><if test="item.desc">{+resolveLinks(item.desc)+}</if></summary>
+				<dl>
+					<if test="item.author">
+					<dt>Author</dt>
+					<dd>{+item.author+}</dd>
+					</if>
+
+					<if test="item.version">
+					<dt>Version</dt>
+					<dd>{+item.version+}</dd>
+					</if>
+
+					{!
+						var license = item.comment.getTag('license');
+						var copyright = item.comment.getTag('copyright');
+					!}
+
+					<if test="license.length">
+					<dt>License</dt>
+					<dd>{+license+}</dd>
+					</if>
+
+					<if test="!license.length">
+					<dt class="error">No license specified</dt>
+					<dd></dd>
+					</if>
+
+					<if test="copyright.length">
+					<dt>Copyright</dt>
+					<dd>{+copyright+}</dd>
+					</if>
+
+					{!
+						var locations = item.comment.getTag('location').map(function($){
+							return $.toString().replace(/(^\$ ?| ?\$$)/g, '').replace(/^HeadURL: https:/g, 'http:');
+						})
+					!}
+
+					<if test="locations.length">
+					<dt>Repository</dt>
+					<for each="location" in="locations">
+					<dd><a href="{+location+}">{+location+}</a></dd>
+					</for>
+					</if>
+				</dl>
+			</details>
+		</section>
+		</for>
+	</article>
+	{+include("static/footer.html")+}
+</body>
+</html>

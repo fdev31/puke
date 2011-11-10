@@ -1,0 +1,134 @@
+
+<dl>
+	<p>
+	<if test="data.returns.length">
+	<for each="item" in="data.returns">
+		{!
+			if(item.type)
+				output += "<span class=\"type\">" + new Link().toSymbol(item.type) + "</span>";
+			else
+				output += "<span class=\"error type\">Unspecified</span>";
+		!}
+		<span class="desc">
+			{+resolveLinks(item.desc)+}
+		</span>
+	</for>
+	</if>
+
+		<span class="name">
+	{!
+		if(data.is('CONSTRUCTOR')){
+			output += "new" + data.alias;
+		}else if(data.isStatic){
+			output += data.alias;
+		}else{
+			output += "this." + data.name.replace(/\^\d+$/, '');
+		}
+	!}
+
+		</span>(
+
+	<if test="data.params.length">
+	{!
+		var ex = "";
+		var sep = "";
+	!}
+	<for each="item" in="data.params">
+		{!
+			output += sep;
+		!}
+		<if test="item.isOptional">
+		{!
+			output += "[ ";
+			ex += "]";
+		!}
+		</if>
+
+		{!
+			if(item.type)
+				output += "<span class=\"type\">" + new Link().toSymbol(item.type) + "</span>";
+			else
+				output += "<span class=\"error type\">Unspecified</span>";
+			output += "<span class=\"name\">" + item.name + "</span>";
+			sep = ", ";
+		!}
+
+		<if test="item.defaultValue">
+		{!
+			output += "= " + item.defaultValue;
+		!}
+		</if>
+	</for>
+	{!
+	output += ex;
+	!}
+	</if>
+	);
+
+	</p>
+
+
+	<if test="data.params.length">
+	<h3 class="parameters">Parameters</h3>
+
+	<dl>
+	<for each="item" in="data.params">
+		<dt>{+item.name+}</dt>
+		<dd>{+resolveLinks(item.desc)+}</dd>
+	</for>
+	</dl>
+	</if>
+
+	<if test="data.exceptions.length">
+	<h3 class="throws">Throws</h3>
+	<dl>
+	<for each="item" in="data.exceptions">
+		<dt>
+		{!
+			if(item.type)
+				output += "<span class=\"type\">" + new Link().toSymbol(item.type) + "</span>";
+			else
+				output += "<span class=\"error type\">Unspecified</span>";
+			output += "<span class=\"name\">" + item.name + "</span>";
+
+		!}
+		</dt>
+		<dd>{+resolveLinks(item.desc)+}</dd>
+	</for>
+	</dl>
+	</if>
+
+	<if test="data.see.length || data.requires.length">
+	<h3 class="linking">Linking</h3>
+	<dl>
+	</if>
+
+	<if test="data.requires.length">
+		<for each="item" in="data.requires">
+		<dt>Requires</dt>
+		<dd>{+ new Link().toSymbol(item) +}</dd>
+		</for>
+	</if>
+
+	<if test="data.see.length">
+		<for each="item" in="data.see">
+		<dt>See</dt>
+		<dd>{+ new Link().toSymbol(item) +}</dd>
+		</for>
+	</if>
+
+	<if test="data.see.length || data.requires.length">
+	</dl>
+	</if>
+
+	<if test="data.example.length">
+	<h3 class="examples">Examples</h3>
+	<dl>
+		<dd>
+		<for each="example" in="data.example">
+			<code>{+example+}</code>
+		</for>
+		</dd>
+	</dl>
+	</if>
+</dl>

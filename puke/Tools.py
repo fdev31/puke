@@ -22,7 +22,15 @@ def combine(in_files, out_file, verbose=False, replace = None):
 
     console.header( "- Combining files :")
 
-    combined = "@option compress: no;"
+    isCSS = False
+    combined = ""
+
+    if len(in_files) > 0 and __get_ext(in_files[0]) in ['css', 'scss']:
+        isCSS = True
+        combined = "@option compress: no;"
+
+
+    
 
     for f in in_files:
 
@@ -39,11 +47,12 @@ def combine(in_files, out_file, verbose=False, replace = None):
 
         combined += data
         
-
-    data = __parse_scss(combined)
+    
+    if isCSS:
+        combined = __parse_scss(combined)
 
     console.confirm( "  Generating %s" % out_file)
-    writefile(out_file, data)
+    writefile(out_file, combined)
 
 def minify(in_file, out_file = None, verbose=False):
 
@@ -110,7 +119,7 @@ def jsdoc(files, folder):
         files = [files]
 
     jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
-    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/puke -a  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
+    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/gris_taupe -a  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
 
     if output:
         console.fail(output)

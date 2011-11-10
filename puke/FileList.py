@@ -27,7 +27,23 @@ class FileList:
 
 
 		self.__explore(dir)
-	
+
+	def merge (self, flist):
+		if isinstance(flist, FileList):
+			flist = flist.get()
+		elif isinstance(flist, str):
+			flist = [flist]
+
+		for f in flist:
+			if f in self.__list:
+				continue
+			
+			self.__list.append(f)
+		
+		
+		
+		return self.__list
+			
 	def get (self):
 		return self.__list
 

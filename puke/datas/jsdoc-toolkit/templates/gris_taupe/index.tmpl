@@ -1,0 +1,29 @@
+{+include("static/boiler.html")+}
+	<title>Roxee Core Library Reference Documentation - Class index</title>
+</head>
+
+<body>
+	{+include("static/header.html")+}
+	
+	{+publish.classesIndex+}
+
+	<article role="main">
+		<h1>Class Index</h1>
+		<for each="thisClass" in="data">
+		<section>
+  			<h2>{+(new Link().toSymbol(thisClass.alias))+}</h2>
+			<details>
+		    	<summary>
+		    		{+resolveLinks(summarize(thisClass.classDesc))+}
+		    	</summary>
+				<p>
+					{+resolveLinks(thisClass.classDesc)+}
+				</p>
+			</details>
+		</section>
+		</for>
+	</article>
+
+	{+include("static/footer.html")+}
+</body>
+</html>
