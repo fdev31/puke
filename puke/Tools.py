@@ -1,7 +1,9 @@
-import os, os.path, shutil, logging, sys, filecmp, stat, re
+import os, os.path, shutil, logging, sys, filecmp, stat, re, time
 from puke.FileList import *
 from puke.Console import *
 from scss import Scss
+from puke.FileSystem import *
+
 
 CSS_COMPRESSOR = sys.argv[0] + '.css.compress'
 JS_COMPRESSOR = sys.argv[0] + '.js.compress'
@@ -9,10 +11,7 @@ JS_COMPRESSOR = sys.argv[0] + '.js.compress'
 
 def combine(in_files, out_file, verbose=False, replace = None):
 
-    if isinstance(in_files, FileList):
-        in_files = in_files.get()
-    elif isinstance(in_files, str):
-        in_files = [in_files]
+    in_files = FileList.check(in_files)
          
     builddir = os.path.dirname(out_file)
 
@@ -43,7 +42,7 @@ def combine(in_files, out_file, verbose=False, replace = None):
 
         fh.close()
    
-        console.info('  + %s ' % (f))
+        console.info('  + %s ' % (__pretty(f)))
 
         combined += data
         
@@ -66,7 +65,7 @@ def minify(in_file, out_file = None, verbose=False):
 
     org_size = os.path.getsize(in_file)
 
-    console.header('- Minifying %s (%.2f kB)' % (in_file, org_size / 1024.0))
+    console.header('- Minifying %s (%.2f kB)' % (__pretty(in_file), org_size / 1024.0))
 
     if in_type == 'js':
         __minify_js(in_file, out_file + '.tmp', verbose)
@@ -85,10 +84,7 @@ def minify(in_file, out_file = None, verbose=False):
 
 
 def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
-    if isinstance(files, FileList):
-        files = files.get()
-    elif isinstance(files, str):
-        files = [files]
+    in_files = FileList.check(in_files)
 
     options = []
     command = ""
@@ -113,10 +109,7 @@ def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
     sh(command)
 
 def jsdoc(files, folder):
-    if isinstance(files, FileList):
-        files = files.get()
-    elif isinstance(files, str):
-        files = [files]
+    in_files = FileList.check(in_files)
 
     jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
     output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/gris_taupe -a  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
@@ -146,85 +139,56 @@ def sh (command, header = None, output = True):
     p.close()
     return result
 
-def makedir(dirname):
-    """ Creates missing hierarchy levels for given directory """
-    
-    if dirname == "":
-        return
-        
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
 
-def deepcopy(file_list, folder):
+def deepcopy(file_list, folder, replace = None):
 
     if isinstance(file_list, FileList):
-        file_list = file_list.get()
+        file_list = file_list.get(True)
     elif isinstance(file_list, str):
-        file_list = [file_list]
+        file_list = [(file_list, '')]
+    else:
+        result = []
+        for f in file_list:
+            result.append( ( f, ''))
+        file_list = result
+        del result
 
     stat = 0
     console.header( "- copy to %s (%s files)" % (folder, len(file_list)))
-    for file in file_list:
-        dst_file = os.path.join(folder,os.path.basename(file))
+    for (file, basepath) in file_list:
+        
+        if basepath:
+            dst_file = file.replace(basepath, '').strip('/')
+            dst_file = os.path.join(folder,dst_file)
+        else:
+            dst_file = os.path.join(folder,os.path.basename(file))
+
+        #console.warn("File : " + file +  " dest " + dst_file)
+
         res = updatefile(file, dst_file)
 
+
+        if res and replace:
+
+            fh = open(dst_file)
+            data = fh.read()
+        
+            for k in replace.keys():
+                data = data.replace(k, replace.get(k))
+
+            fh.close()
+            writefile(dst_file, data, os.path.getmtime(file))
+            
+
+
         if res:
-            console.info(' + %s' % file)
+            console.info(' + %s' % __pretty(file))
             stat += 1
     
     console.confirm( "  %s files updated" % (stat))
 
     
-def copyfile(src, dst):
-    """ Copy src file to dst file. Both should be filenames, not directories. """
-    
-    if not os.path.isfile(src):
-        console.error("No such file: %s" % src)
-        return False
 
-    # First test for existance of destination directory
-    makedir(os.path.dirname(dst))
-    
-    # Finally copy file to directory
-    try:
-        shutil.copy2(src, dst)
-    except IOError as ex:
-        console.error("Could not write file %s: %s" % (dst, ex))
-        
-    return True
-    
-    
-def updatefile(src, dst):
-    """ Same as copyfile() but only do copying when source file is newer than target file """
-    
-    if not os.path.isfile(src):
-        console.error("No such file: %s" % src)
-        return False
-    
-    try:
-        dst_mtime = os.path.getmtime(dst)
-        src_mtime = os.path.getmtime(src)
-        
-        # Only accecpt equal modification time as equal as copyfile()
-        # syncs over the mtime from the source.
-        if src_mtime == dst_mtime:
-            return False
-        
-    except OSError:
-        # destination file does not exist, so mtime check fails
-        pass
-        
-    return copyfile(src, dst)
-
-
-def writefile(dst, content):
-    # First test for existance of destination directory
-    makedir(os.path.dirname(dst))
-    
-    # Open file handle and write
-    handle = open(dst, mode="w")
-    handle.write(content)
-    handle.close()
 
 def stats(file_list, title = ""):
     if isinstance(file_list, FileList):
@@ -255,6 +219,11 @@ def stats(file_list, title = ""):
     console.info(  "   ~ Size : %s (%s per file)" % (hsizeof(size), hsizeof((size / len(file_list)))))
     console.info("")
 
+def __pretty(filename):
+    if filename.startswith('.pukecache'):
+        return PukeBuffer.getInfo(filename.split('/').pop())
+    
+    return filename
 
 def __minify_css(in_file, out_file, verbose):
     options = ['-o "%s"' % out_file,

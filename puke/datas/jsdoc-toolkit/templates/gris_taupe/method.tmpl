@@ -1,46 +1,18 @@
-
-<dl>
-	<p>
-	<if test="data.returns.length">
-	<for each="item" in="data.returns">
-		{!
-			if(item.type)
-				output += "<span class=\"type\">" + new Link().toSymbol(item.type) + "</span>";
-			else
-				output += "<span class=\"error type\">Unspecified</span>";
-		!}
-		<span class="desc">
-			{+resolveLinks(item.desc)+}
-		</span>
-	</for>
-	</if>
-
-		<span class="name">
 	{!
-		if(data.is('CONSTRUCTOR')){
-			output += "new" + data.alias;
-		}else if(data.isStatic){
-			output += data.alias;
-		}else{
-			output += "this." + data.name.replace(/\^\d+$/, '');
-		}
+		if(data.is('CONSTRUCTOR'))
+			output += "<p><span class=\"name\">new " + data.alias + "</span>" + makeSignature(data.params) + ";</p>";
 	!}
 
-		</span>(
 
 	<if test="data.params.length">
-	{!
-		var ex = "";
-		var sep = "";
-	!}
+	<h3 class="parameters">Parameters</h3>
+
+	<dl>
 	<for each="item" in="data.params">
-		{!
-			output += sep;
-		!}
+		<dt>
 		<if test="item.isOptional">
 		{!
 			output += "[ ";
-			ex += "]";
 		!}
 		</if>
 
@@ -50,7 +22,6 @@
 			else
 				output += "<span class=\"error type\">Unspecified</span>";
 			output += "<span class=\"name\">" + item.name + "</span>";
-			sep = ", ";
 		!}
 
 		<if test="item.defaultValue">
@@ -58,26 +29,18 @@
 			output += "= " + item.defaultValue;
 		!}
 		</if>
-	</for>
-	{!
-	output += ex;
-	!}
-	</if>
-	);
 
-	</p>
-
-
-	<if test="data.params.length">
-	<h3 class="parameters">Parameters</h3>
-
-	<dl>
-	<for each="item" in="data.params">
-		<dt>{+item.name+}</dt>
+		<if test="item.isOptional">
+		{!
+			output += " ]";
+		!}
+		</if>
+		</dt>
 		<dd>{+resolveLinks(item.desc)+}</dd>
 	</for>
 	</dl>
 	</if>
+
 
 	<if test="data.exceptions.length">
 	<h3 class="throws">Throws</h3>
@@ -93,6 +56,21 @@
 
 		!}
 		</dt>
+		<dd>{+resolveLinks(item.desc)+}</dd>
+	</for>
+	</dl>
+	</if>
+
+	<if test="data.returns.length">
+	<h3 class="returns">Returns</h3>
+	<dl>
+	<for each="item" in="data.returns">
+		<dt>{!
+			if(item.type)
+				output += "<span class=\"type\">" + new Link().toSymbol(item.type) + "</span>";
+			else
+				output += "<span class=\"error type\">Unspecified</span>";
+		!}</dt>
 		<dd>{+resolveLinks(item.desc)+}</dd>
 	</for>
 	</dl>
@@ -131,4 +109,3 @@
 		</dd>
 	</dl>
 	</if>
-</dl>

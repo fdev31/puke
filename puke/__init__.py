@@ -9,6 +9,7 @@ from puke.Tools  import *
 from puke.FileList import *
 from puke.Sed import *
 from puke.Console import *
+from puke.FileSystem import *
 
 VERSION = 0.1
 
@@ -29,6 +30,7 @@ def run():
     #
 
     parser = OptionParser()
+    parser.add_option("-c", "--clear", action="store_true", dest="clearcache", help="Spring time, clean all the vomit")
     parser.add_option("-q", "--quiet", action="store_false", dest="verbose", help="don't print status messages to stdout")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="print more detailed status messages to stdout")
     parser.add_option("-t", "--tasks",action="store_true",  dest="list_tasks", help="list tasks")
@@ -54,21 +56,21 @@ def run():
             logging.getLogger().setLevel(logging.INFO)
     
     # Define a Handler which writes INFO messages or higher to the sys.stderr
-    console = logging.StreamHandler()
+    consoleCfg = logging.StreamHandler()
 
     if options.verbose is True:
-        console.setLevel(logging.DEBUG)
+        consoleCfg.setLevel(logging.DEBUG)
     elif options.verbose is False:
-        console.setLevel(logging.WARN)
+        consoleCfg.setLevel(logging.WARN)
     else:
-        console.setLevel(logging.INFO)
+        consoleCfg.setLevel(logging.INFO)
     
     if os.environ.get("NOCOLOR"):
-        console.setFormatter(logging.Formatter( ' %(message)s' , '%H:%M:%S'))
+        consoleCfg.setFormatter(logging.Formatter( ' %(message)s' , '%H:%M:%S'))
     else:
-        console.setFormatter(logging.Formatter( ' %(message)s' + Style.RESET_ALL, '%H:%M:%S'))
+        consoleCfg.setFormatter(logging.Formatter( ' %(message)s' + Style.RESET_ALL, '%H:%M:%S'))
 
-    logging.getLogger().addHandler(console)
+    logging.getLogger().addHandler(consoleCfg)
 
     #
     # Find and execute build script
@@ -102,6 +104,16 @@ def run():
         logging.error("No tasks to execute. Please choose from: ")
         printTasks()
         sys.exit(1)
+
+    
+    if options.clearcache:
+        console.header("Spring time, cleaning all the vomit around ...")
+        console.log("...")
+        if PukeBuffer.clean():
+            console.confirm("You're good to go !\n")
+        else:
+            console.confirm("Your room is already tidy, good boy :-) \n")
+        sys.exit(1)
     
     try:
         args = args.strip()
@@ -123,15 +135,17 @@ def run():
         
 
 def main():
-    try:
-        run()
+    #try:
+    run()
+    
+    #except Exception as error:
 
-    except Exception as error:
-        console.fail("\n\n :puke: \n PUKE %s\n" % error)
-        sys.exit(1)
+    #    console.fail("\n\n :puke: \n PUKE %s\n" % error)
+
+    #    sys.exit(1)
         
-    except KeyboardInterrupt:
-        console.warn("\n\n :puke: \nBuild interrupted!\n")
-        sys.exit(2)
+    #except KeyboardInterrupt:
+    #    console.warn("\n\n :puke: \nBuild interrupted!\n")
+    #    sys.exit(2)
         
     sys.exit(0)
