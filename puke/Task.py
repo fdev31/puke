@@ -5,6 +5,7 @@ from puke.Console import *
 
 __tasks__ = {}
 
+
 def addTask(task):
     console.debug("Registering task: %s" % task.name)
     __tasks__[task.name] = task

@@ -1,5 +1,6 @@
 import os
 import shutil
+from puke.Console import *
 
 def makedir(dirname):
     """ Creates missing hierarchy levels for given directory """

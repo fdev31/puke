@@ -10,6 +10,7 @@ from puke.FileList import *
 from puke.Sed import *
 from puke.Console import *
 from puke.FileSystem import *
+from puke.Env import *
 
 VERSION = 0.1
 
@@ -135,17 +136,17 @@ def run():
         
 
 def main():
-    #try:
-    run()
+    try:
+        run()
     
-    #except Exception as error:
+    except Exception as error:
 
-    #    console.fail("\n\n :puke: \n PUKE %s\n" % error)
+        console.fail("\n\n :puke: \n PUKE %s\n" % error)
 
-    #    sys.exit(1)
+        sys.exit(1)
         
-    #except KeyboardInterrupt:
-    #    console.warn("\n\n :puke: \nBuild interrupted!\n")
-    #    sys.exit(2)
+    except KeyboardInterrupt:
+        console.warn("\n\n :puke: \nBuild interrupted!\n")
+        sys.exit(2)
         
     sys.exit(0)

@@ -1,8 +1,11 @@
 import os, os.path, shutil, logging, sys, filecmp, stat, re, time
+
+
 from puke.FileList import *
 from puke.Console import *
 from scss import Scss
 from puke.FileSystem import *
+from puke.Compress import *
 
 
 CSS_COMPRESSOR = sys.argv[0] + '.css.compress'
@@ -38,7 +41,8 @@ def combine(in_files, out_file, verbose=False, replace = None):
 
         if replace:
             for k in replace.keys():
-                data = data.replace(k, replace.get(k))
+                data = re.sub(k, replace.get(k), data)
+                #data = data.replace(k, replace.get(k))
 
         fh.close()
    
@@ -84,7 +88,7 @@ def minify(in_file, out_file = None, verbose=False):
 
 
 def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
-    in_files = FileList.check(in_files)
+    files = FileList.check(files)
 
     options = []
     command = ""
@@ -109,7 +113,7 @@ def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
     sh(command)
 
 def jsdoc(files, folder):
-    in_files = FileList.check(in_files)
+    files = FileList.check(files)
 
     jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
     output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/gris_taupe -a  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
@@ -142,26 +146,17 @@ def sh (command, header = None, output = True):
 
 def deepcopy(file_list, folder, replace = None):
 
-    if isinstance(file_list, FileList):
-        file_list = file_list.get(True)
-    elif isinstance(file_list, str):
-        file_list = [(file_list, '')]
-    else:
-        result = []
-        for f in file_list:
-            result.append( ( f, ''))
-        file_list = result
-        del result
+    file_list = FileList.check(file_list, True)
 
     stat = 0
     console.header( "- copy to %s (%s files)" % (folder, len(file_list)))
     for (file, basepath) in file_list:
         
         if basepath:
-            dst_file = file.replace(basepath, '').strip('/')
+            dst_file = __pretty(file).replace(basepath, '').strip('/')
             dst_file = os.path.join(folder,dst_file)
         else:
-            dst_file = os.path.join(folder,os.path.basename(file))
+            dst_file = os.path.join(folder,os.path.basename(__pretty(file)))
 
         #console.warn("File : " + file +  " dest " + dst_file)
 
@@ -174,7 +169,8 @@ def deepcopy(file_list, folder, replace = None):
             data = fh.read()
         
             for k in replace.keys():
-                data = data.replace(k, replace.get(k))
+                data = re.sub(k, replace.get(k), data)
+                #data = data.replace(k, replace.get(k))
 
             fh.close()
             writefile(dst_file, data, os.path.getmtime(file))
@@ -191,10 +187,7 @@ def deepcopy(file_list, folder, replace = None):
 
 
 def stats(file_list, title = ""):
-    if isinstance(file_list, FileList):
-        file_list = file_list.get()
-    elif isinstance(file_list, str):
-        file_list = [file_list]
+    file_list = FileList.check(file_list)
 
     size = __exec("du %s | cut  -f1 |(tr '\n' '+'; echo 0) | bc" % ' '.join(file_list))
 
@@ -218,6 +211,50 @@ def stats(file_list, title = ""):
     console.info(  "   ~ Lines : %s  (%s per file)" % (lines, (lines / len(file_list))))
     console.info(  "   ~ Size : %s (%s per file)" % (hsizeof(size), hsizeof((size / len(file_list)))))
     console.info("")
+
+
+
+def pack (file_list, output):
+
+    file_list = FileList.check(file_list)
+
+    console.header( "- Packing files to %s (%s files)" % (output, len(file_list)))
+
+    comp = Compress.open(output, "w")
+     
+    for file in file_list:
+        console.info(' * %s' % __pretty(file))
+        comp.add(file)
+
+    comp.close()
+
+    console.confirm(" %s packed" % output)
+
+def unpack (pack_file, output):
+    
+    console.header( "- Unpacking %s to %s " % (pack_file, output))
+
+    if not Compress.check(pack_file):
+        console.error(" %s is not a valid pack" % output)
+        return
+
+    comp = Compress.open(pack_file, "r")
+    
+    
+
+    count = 0
+    for fname in comp:
+        data = comp.extract(fname)
+        
+        output_file = os.path.join(output, fname)
+        console.info(' + %s' % __pretty(output_file))
+        writefile(output_file, data)
+        count += 1
+    
+    comp.close()
+    console.confirm(" %s unpacked in %s (%s files)" % (pack_file, output, count))
+
+     
 
 def __pretty(filename):
     if filename.startswith('.pukecache'):
