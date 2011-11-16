@@ -184,11 +184,14 @@ def deepcopy(file_list, folder, replace = None):
 
         #console.warn("File : " + file +  " dest " + dst_file)
 
-        res = updatefile(file, dst_file)
-
+        if not forceRefresh:
+            res = updatefile(file, dst_file)
+        else:
+            copyfile(file, dst_file)
+            res = True
         
 
-        if forceRefresh or (res and replace):
+        if res and replace:
 
             fh = open(dst_file)
             data = fh.read()
@@ -200,7 +203,7 @@ def deepcopy(file_list, folder, replace = None):
             
 
 
-        if forceRefresh or res:
+        if res:
             console.info(' + %s' % __pretty(file))
             stat += 1
     

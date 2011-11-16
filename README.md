@@ -18,27 +18,27 @@ Basic file manipulation, js linting via closure, minification via closure and YU
 
 Use brew (https://github.com/mxcl/homebrew) and get yourself a fresh python if you don't want to mess up your lovely Lion system.
 
-`brew install python`
+<pre>brew install python</pre>
 
 Update your .profile PATH if you're a new brew user.
 
-`export PATH="/usr/local/bin:/usr/local/share/python:$PATH"`
+<pre>export PATH="/usr/local/bin:/usr/local/share/python:$PATH"</pre>
 
 Get pip.
 
-`/usr/local/share/python/easy_install pip`
+<pre>/usr/local/share/python/easy_install pip</pre>
 
-`/usr/local/share/python/pip install --upgrade distribute`
+<pre>/usr/local/share/python/pip install --upgrade distribute</pre>
 
 Then get puke.
 
-`pip install puke`
+<pre>pip install puke</pre>
 
 That's it. You're ready
 
 Whenever you want to upgrade to the latest version, just 
 
-`pip install puke --upgrade`
+<pre>pip install puke --upgrade</pre>
 
 ## Usage
 
@@ -54,8 +54,10 @@ Usage: puke [options]
 
 Options:
   -h, --help            show this help message and exit
+  -c, --clear           Spring time, clean all the vomit
   -q, --quiet           don't print status messages to stdout
   -v, --verbose         print more detailed status messages to stdout
+  -t, --tasks           list tasks
   -l LOGFILE, --log=LOGFILE
                         Write debug messages to given logfile
   -f FILE, --file=FILE  Use the given build script
@@ -64,7 +66,7 @@ Options:
 Can't remember your tasks ? Just puke it 
 
 <pre>
-$ puke
+$ puke --tasks
  No tasks to execute. Please choose from: 
  test: coin coin
  simple: Simple Test
@@ -75,7 +77,7 @@ $ puke
 
 ## Puke 10 seconds API reference 
 
-Header:
+### Header:
 
 <pre>
 #!/usr/bin/env puke
@@ -83,7 +85,8 @@ Header:
 </pre>
 
 
-Defining a simple task:
+### Defining a simple task:
+_Name your task "default" in order to have it executed by simply puke-ing_
 
 <pre>
 @task("Simple Test")
@@ -91,58 +94,143 @@ def simple():
    console.log("Do something")
 </pre>
 
-Calling a task from another task:
 
-`executeTask('simple')`
+### Calling a task from another task:
 
-Logging:
+<pre>executeTask('simple')</pre>
+
+
+### Defining "default" task:
+
+<pre>
+@task("")
+def default():
+   executeTask('simple')
+
+@task("Simple Test")
+def simple():
+   console.log("Do something")
+</pre>
+
+### Require (json / yaml)
+
+<pre>
+r = Require('global.yaml')
+r.merge('build.yaml')
+</pre>
+
+Working with environment variables (Yaml example):
+
+<pre>
+params:
+  #           envvar name | default
+  build_dir: "${BUILD_DIR}|/usr/toto/build/"
+  string: "toto"
+
+</pre>
+
+Yak it and make the puke easier!
+
+<pre>
+r = Require('global.yaml')
+r.yak('params')
+
+@task("Simple Test")
+def simple():
+   console.log("Easy to get my conf", Yak.build_dir, Yak.string)
+</pre>
+
+### Straight access to environment variables
+
+<pre>
+Env.get('BUILD_DIR', 'default')
+</pre>
+
+
+### Logging:
 
 <pre>
 # Info levels
-console.info("info")
-console.confirm("confirm")
+console.info("info", arg2, ...)
+console.confirm("confirm", arg2, ...)
+console.log("log", arg2, ...)
+console.debug("debug", arg2, ...)
+console.warn("warn", arg2, ...)
+console.error("error", arg2, ...)
+
 console.header("header")
-console.log("log")
-console.debug("debug")
-console.warn("warn")
-console.error("error")
 console.fail("fail")
 </pre>
 
-Getting a FileList:
+
+### Getting a FileList:
 
 <pre>
 list = FileList("foldername", filter = "*.js", exclude = "*.min.js")`
 
 # multicriteria
-list = FileList("src", filter = "*.css,*.scss")
+list2 = FileList("src", filter = "*.css,*.scss")
+
+#merge lists
+list.merge(list2) 
+
 </pre>
 
 or
 
-`list = ["somefilepath", "someother"]`
+<pre>list = ["somefilepath", "someother", "http://example.com/something"]</pre>
+
+**Note** that http:// urls are supported
+
+**Note** that SCSS are automatically parsed
 
 
+### Merging files into one:
 
-Merging files into one:
+<pre>combine(list, "build/test.js")</pre>
 
-`combine(list, "build/test.js")`
 
-Deep-copying (folder list):
+### Deep-copying (folder list):
 
-`deepcopy(list, 'build/copy/')`
+<pre>deepcopy(list, 'build/copy/')</pre>
 
-Minifying (with closure for js, and yahoo ui for css):
 
-`minify("build/test.js")`
+### Minifying (with closure for js, and yahoo ui for css):
 
-Call system:
+<pre>minify("build/test.js")</pre>
 
-`sh("pwd")`
+### Pack/unpack (gz, zip)
+Packing :
 
-Get FileList stats:
+<pre>
+#zip
+pack(list, "folder/something.zip")
 
-`stats(list, title = "JS Stats")`
+#gz
+pack(list, "folder/something.tar.gz")
+</pre>
+
+Unpacking :
+<pre>
+#zip
+unpack('folder/something.zip', 'folder/test-unpack/')
+
+#gz
+unpack('build/something.tar.gz', 'folder/test-unpack/')
+</pre>
+
+
+### Call system:
+
+<pre>sh("pwd")</pre>
+<pre>
+#get output
+pwd = sh("pwd")
+</pre>
+
+### Get FileList stats:
+
+<pre>stats(list, title = "JS Stats")</pre>
 
 <pre>
  - JS stats :
@@ -151,21 +239,36 @@ Get FileList stats:
    ~ Size : 1.8KB (28.0bytes per file)
 </pre>
 
-Perform in-file pattern replacement:
+
+### Perform in-file pattern replacement:
 
 <pre>
 sed = Sed()
 sed.add('$TOTO$', 'troulute')
 combine(list, "build/test.js", replace = sed)
+deepcopy(list, "build/test.js", replace = sed)
 </pre>
 
-Using jslint (see [linting](Javascript-linting) for more):
 
-`jslint(list, strict=False, nojsdoc=False, fix=False, relax=False)`
+### Using jslint (see [linting](Javascript-linting) for more):
 
-Using jsdoctoolkit (see [documenting javascript](Javascript-documentation) for more):
+<pre>jslint(list, strict=False, nojsdoc=False, fix=False, relax=False)</pre>
 
-`jsdoc(list, "docdestination")`
+
+### Using jsdoctoolkit (see [documenting javascript](Javascript-documentation) for more):
+
+<pre>jsdoc(list, "docdestination", [template = "templatepath"])</pre>
+
+### Clear puke cache
+
+<pre>
+$ puke -c
+ 
+ Spring time, cleaning all the vomit around ...
+ ...
+ You're good to go !
+</pre> 
+
 
 ## Guidelines
 
