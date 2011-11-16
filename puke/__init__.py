@@ -11,12 +11,15 @@ from puke.Sed import *
 from puke.Console import *
 from puke.FileSystem import *
 from puke.Env import *
+from puke.Cache import *
+from puke.Require import *
+from puke.Yak import *
 
 VERSION = 0.1
 
 __all__ = ["main", "VERSION"]
 
-import sys, logging, os
+import sys, logging, os, traceback
 from optparse import OptionParser
 
 from colorama import *
@@ -93,7 +96,7 @@ def run():
             raise PukeError("No generate file '%s' found!" % options.file)
         else:
             raise PukeError("No generate file found!")
-
+    
     retval = execfile(script)
 
     #
@@ -110,7 +113,7 @@ def run():
     if options.clearcache:
         console.header("Spring time, cleaning all the vomit around ...")
         console.log("...")
-        if PukeBuffer.clean():
+        if Cache.clean():
             console.confirm("You're good to go !\n")
         else:
             console.confirm("Your room is already tidy, good boy :-) \n")
@@ -133,7 +136,16 @@ def run():
         if not os.path.basename(name) in pukefiles:
             executeTask(name.strip())
         
-        
+def gettraceback():
+    trace = ""
+    exception = ""
+    exc_list = traceback.format_exception_only (sys.exc_type, sys.exc_value)
+    for entry in exc_list:
+        exception += entry
+    tb_list = traceback.format_tb(sys.exc_info()[2])
+    for entry in tb_list[-1]:
+        trace += entry  
+    return trace  
 
 def main():
     try:
@@ -141,7 +153,7 @@ def main():
     
     except Exception as error:
 
-        console.fail("\n\n :puke: \n PUKE %s\n" % error)
+        console.fail("\n\n :puke: \n PUKE %s \n %s \n" % (error, gettraceback()))
 
         sys.exit(1)
         

@@ -59,7 +59,7 @@ class Task:
 
 
     def __repr__(self):
-        return "Task: " + self.__name__
+        return "Task: " + self.name
 
 
 

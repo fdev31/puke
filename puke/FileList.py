@@ -1,10 +1,12 @@
 import os, logging
 import fnmatch, re
-import urllib2
 import hashlib
+
+
 
 from puke.Console import *
 from puke.FileSystem import *
+from puke.Cache import *
 
 
 
@@ -72,6 +74,17 @@ class FileList:
 
 		return self.__list
 
+	
+	@staticmethod
+	def getSignature(list):
+		sig = ""
+		for (f,p) in list:
+			sig += "%s" % hashlib.sha256(f).hexdigest()
+		
+		sig = hashlib.sha256(sig).hexdigest()
+
+		return sig
+
 	@staticmethod
 	def check(flist, full = False):
 		if isinstance(flist, FileList):
@@ -90,7 +103,7 @@ class FileList:
 		for (f, p) in flist:
 			if f.startswith('http'):
 
-				f = PukeBuffer.fetchHttp(f)
+				f = Cache.fetchHttp(f)
 			
 			if not full:
 				result.append(f)
@@ -119,54 +132,5 @@ class FileList:
 
 
 
-class PukeBuffer:
 
-	@staticmethod
-	def fetchHttp(url):
-		id = hashlib.sha256(url).hexdigest()
-
-		if PukeBuffer.check(id):
-			return PukeBuffer.getPath(id)
-		
-		try:
-			handler = urllib2.build_opener()
-			payload = handler.open(url).read()
-		except Exception as error:
-			console.error('HTTP fail %s (%s)' % (url, error))
-
-		return PukeBuffer.write(id, payload, url)
-
-
-	@staticmethod
-	def write(id, payload, info = None):
-		writefile(".pukecache/%s" % id, payload)
-
-		if info:
-			writefile(".pukecache/%s.meta" % id, info)
-
-		return PukeBuffer.getPath(id)
-
-	@staticmethod
-	def check(id):
-		return fileexists(".pukecache/%s" % id)
-
-	@staticmethod
-	def getPath(id):
-		return ".pukecache/%s" % id
-
-	@staticmethod
-	def getInfo(id):
-		if not fileexists(".pukecache/%s.meta" % id):
-			return ""
-		
-		return readfile(".pukecache/%s.meta" % id)
-
-
-	@staticmethod
-	def clean():
-		try:
-			rm(".pukecache/")
-			return True
-		except:
-			return False
 		       

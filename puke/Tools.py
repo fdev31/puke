@@ -8,9 +8,12 @@ from puke.FileSystem import *
 from puke.Compress import *
 
 
+from puke.Cache import *
+
+
 CSS_COMPRESSOR = sys.argv[0] + '.css.compress'
 JS_COMPRESSOR = sys.argv[0] + '.js.compress'
-
+JS_RUNNER = sys.argv[0] + '.js.runner'
 
 def combine(in_files, out_file, verbose=False, replace = None):
 
@@ -40,9 +43,7 @@ def combine(in_files, out_file, verbose=False, replace = None):
         data = fh.read() + '\n'
 
         if replace:
-            for k in replace.keys():
-                data = re.sub(k, replace.get(k), data)
-                #data = data.replace(k, replace.get(k))
+            data = __replace(data, replace)
 
         fh.close()
    
@@ -112,16 +113,21 @@ def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
     
     sh(command)
 
-def jsdoc(files, folder):
+def jsdoc(files, folder, template = None):
     files = FileList.check(files)
 
+    if not template:
+        template = "%s/templates/gris_taupe" % jsdoc
+
     jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
-    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s/templates/gris_taupe -a  %s" % (jsdoc, jsdoc, folder, jsdoc, ' '.join(files)), header = "Generating js doc", output = False)
+    output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s -a  %s" % (jsdoc, jsdoc, folder, template, ' '.join(files)), header = "Generating js doc", output = True)
 
     if output:
         console.fail(output)
     
     console.confirm('  Doc generated in "%s"' % folder)
+
+
 
 def sh (command, header = None, output = True):
     if not header:
@@ -135,7 +141,10 @@ def sh (command, header = None, output = True):
     p = os.popen(command)
     for line in p.readlines():
 
-        result += line + '\n'
+        result += line
+        
+        if not line.endswith('\n'):
+            result += '\n'
 
         if output:
             console.info( '   ' +line)
@@ -150,6 +159,21 @@ def deepcopy(file_list, folder, replace = None):
 
     stat = 0
     console.header( "- copy to %s (%s files)" % (folder, len(file_list)))
+
+
+    #Check if Sed changed
+    forceRefresh = False
+    if replace:
+        filesId = FileList.getSignature(file_list)
+        sedID = replace.getSignature()
+        sedUpdated = Cache.read("sed-%s-%s" % (filesId, sedID))
+
+        if not sedUpdated:
+            forceRefresh = True
+            Cache.write("sed-%s-%s" % (filesId, sedID), "%s" % int(time.time()))
+
+
+    
     for (file, basepath) in file_list:
         
         if basepath:
@@ -162,22 +186,21 @@ def deepcopy(file_list, folder, replace = None):
 
         res = updatefile(file, dst_file)
 
+        
 
-        if res and replace:
+        if forceRefresh or (res and replace):
 
             fh = open(dst_file)
             data = fh.read()
         
-            for k in replace.keys():
-                data = re.sub(k, replace.get(k), data)
-                #data = data.replace(k, replace.get(k))
+            data = __replace(data, replace)
 
             fh.close()
             writefile(dst_file, data, os.path.getmtime(file))
             
 
 
-        if res:
+        if forceRefresh or res:
             console.info(' + %s' % __pretty(file))
             stat += 1
     
@@ -254,11 +277,56 @@ def unpack (pack_file, output):
     comp.close()
     console.confirm(" %s unpacked in %s (%s files)" % (pack_file, output, count))
 
-     
+### WIP
+def __jasmine(files):
+    files = [files]
+
+    envjs =  os.path.join(__get_datas_path(), 'envjs')
+    output = sh("cd %s && java -jar %s -opt -1 %s/envjs.bootstrap.js %s" % (envjs, JS_RUNNER, envjs, " ".join(files)) , header = None, output = False)
+
+    lines = output.split('\n')
+
+    hasFailed = False
+
+    for line in lines:
+        if "Envjs" in line:
+            continue
+
+        if "Loading" in line:
+            console.info('  * ' + line)
+        elif "FAILED" in line:
+            hasFailed = True
+            console.error('  ' + line + '  ')
+        elif "Suite" in line:
+            console.log(' • ' + line)
+        elif "Spec" in line or "Error" in line:
+            console.info('   ' + line)
+        elif "Passed:" in line:
+            console.log(' ' + '-'*40)
+            console.log('  '+ line)
+        elif "Failed:" in line:
+            console.log('  ' + line)
+        elif "Total" in line:
+            console.log('  ' + line)
+            console.log(' ' + '-'*40)
+        else:
+            console.info('  ' + line)
+    
+    if not hasFailed: 
+        console.confirm('  Tests success')
+    else:
+        console.fail("  Tests failure")
+    
+def __replace(data, replace):
+    for k in replace.keys():
+        data = re.sub(k, replace.get(k), data)
+
+    return data
+
 
 def __pretty(filename):
     if filename.startswith('.pukecache'):
-        return PukeBuffer.getInfo(filename.split('/').pop())
+        return Cache.getInfo(filename.split('/').pop())
     
     return filename
 

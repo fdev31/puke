@@ -1,3 +1,4 @@
+import hashlib
 
 class Sed:
 
@@ -15,3 +16,10 @@ class Sed:
 	
 	def get(self, key):
 		return self._list[key]
+
+	def getSignature(self):
+		sig = ""
+		for k,v in self._list.items():
+			sig += "%s" % hashlib.sha256("%s%s" % (k,v)).hexdigest()
+
+		return hashlib.sha256(sig).hexdigest()

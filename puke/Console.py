@@ -1,4 +1,4 @@
-import logging, sys, os
+import logging, sys, os, json
 from colorama import *
 
 init(autoreset = True)
@@ -6,49 +6,75 @@ init(autoreset = True)
 class console:
 	
 
+
 	@staticmethod
-	def log(msg):
+	def log(*messages):
+		color = Style.BRIGHT 
 		if os.environ.get("NOCOLOR"):
-			logging.info(  msg)
-		else:
-			logging.info( Style.BRIGHT + msg)
+			color = ""
+
+		for m in messages:
+			msg = console.stringify(m)
+			logging.info(color + msg)
 	
 	@staticmethod
-	def info(msg):
-		logging.info(   msg)
+	def info(*messages):
+		for m in messages:
+			msg = console.stringify(m)
+			logging.info(   msg)
 
 	@staticmethod
-	def debug(msg):
+	def debug(*messages):
+		color = Back.BLUE
+
 		if os.environ.get("NOCOLOR"):
-			logging.debug( msg )
-		else:
-			logging.debug( Back.BLUE +  msg )
-
-	@staticmethod
-	def warn(msg):
+			color = ""
 		
-		msg = console.pukefactory(msg)
 		if os.environ.get("NOCOLOR"):
-			logging.warning(  msg)
-		else:
-			logging.warning( Fore.YELLOW + Style.BRIGHT + msg)
-	
-	@staticmethod
-	def error(msg):
-		if os.environ.get("NOCOLOR"):
-			logging.error(  msg)
-		else:
-			logging.error( Back.RED + Style.BRIGHT + msg)
+			color = ""
+
+		for m in messages:
+			msg = console.stringify(m)
+			logging.debug( color +  msg )
 
 	@staticmethod
-	def confirm(msg):
+	def warn(*messages):
+		color = Fore.YELLOW + Style.BRIGHT
+
 		if os.environ.get("NOCOLOR"):
-			logging.info(msg )
-		else:
-			logging.info(Fore.GREEN + Style.BRIGHT + msg )
+			color = ""
+
+		for m in messages:
+			msg = console.stringify(m)
+			msg = console.pukefactory(msg)
+		
+			logging.warning( color + msg)
+	
+	@staticmethod
+	def error(*messages):
+		color = Back.RED + Style.BRIGHT
+
+		if os.environ.get("NOCOLOR"):
+			color = ""
+
+		for m in messages:
+			msg = console.stringify(m)
+			logging.error( color + msg)
+
+	@staticmethod
+	def confirm(*messages):
+		color = Fore.GREEN + Style.BRIGHT
+
+		if os.environ.get("NOCOLOR"):
+			color = ""
+			
+		for m in messages:
+			msg = console.stringify(m)
+			logging.info(color + msg )
 	
 	@staticmethod
 	def header(msg, level = 2):
+		msg = console.stringify(msg)
 		logging.info("")
 		if level == 1:
 			color = Fore.MAGENTA
@@ -62,6 +88,7 @@ class console:
 
 	@staticmethod
 	def fail(msg):
+		msg = console.stringify(msg)
 		msg = console.pukefactory(msg)
 		console.error(" /!\\ BUILD FAIL : " + msg)
 		sys.exit(1)
@@ -81,4 +108,9 @@ class console:
 		return msg
 
 
+	@staticmethod
+	def stringify(msg):
+		if isinstance(msg, str):
+			return msg
 
+		return json.JSONEncoder().encode(msg)

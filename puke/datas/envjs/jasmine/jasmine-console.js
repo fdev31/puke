@@ -1,4 +1,29 @@
-importPackage(java.lang);
+(function() {
+    if (! jasmine) {
+        throw new Exception("jasmine library does not exist in global namespace!");
+    }
+
+    importPackage(java.lang);
+
+
+if (!this.EnvJasmine) {
+    this.EnvJasmine = {};
+}
+
+
+EnvJasmine.specs = [];
+EnvJasmine.passedCount = 0;
+EnvJasmine.failedCount = 0;
+EnvJasmine.totalCount = 0;
+
+EnvJasmine.green = "\033[32m";
+EnvJasmine.red = "\033[31m";        
+EnvJasmine.endColor = "\033[0m";
+
+EnvJasmine.disableColor = false;
+
+
+   
 
 var RhinoReporter = function() {
     var results = "",
@@ -74,5 +99,6 @@ var RhinoReporter = function() {
         }
     };
 };
-
-jasmine.getEnv().addReporter(new RhinoReporter());
+    // export public
+    jasmine.RhinoReporter = RhinoReporter;
+})();

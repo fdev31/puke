@@ -11,18 +11,19 @@ import logging
 
 setup(
     name = "puke",
-    version = "1.0.13",
+    version = "1.1.0",
     packages = ['puke'],
 
     scripts = [
        'bin/puke',
        'bin/puke.js.compress',
-       'bin/puke.css.compress'
+       'bin/puke.css.compress',
+       'bin/puke.js.runner'
     ],
 
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires = ['pyscss', 'closure_linter', 'colorama'],
+    install_requires = ['pyscss', 'closure_linter', 'colorama', 'PyYAML'],
     dependency_links = ['http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz'],
   
     # metadata for upload to PyPI
