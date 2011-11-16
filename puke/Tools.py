@@ -134,8 +134,9 @@ def sh (command, header = None, output = True):
         header = 'exec "%s" ' % command
     else:
         console.debug(command)
-
-    console.header(' - '+header)
+    
+    if output or header:
+        console.header(' - '+header)
     
     result = ""
     p = os.popen(command)
@@ -166,13 +167,29 @@ def deepcopy(file_list, folder, replace = None):
     if replace:
         filesId = FileList.getSignature(file_list)
         sedID = replace.getSignature()
-        sedUpdated = Cache.read("sed-%s-%s" % (filesId, sedID))
+        filesInfo = Cache.read("sed-%s" % filesId)
 
-        if not sedUpdated:
+        sedUpdated = True
+
+        if filesInfo:
+            lastSed = filesInfo.split('\n')[-1]
+            lastSed = lastSed.split(':')[0]
+
+            if lastSed == sedID:
+                sedUpdated = False
+            
+            filesInfo += "\n"
+        else:
+            filesInfo = ""
+
+
+
+        if sedUpdated:
             forceRefresh = True
-            Cache.write("sed-%s-%s" % (filesId, sedID), "%s" % int(time.time()))
+            Cache.write("sed-%s" % (filesId), "%s%s:%s" % (filesInfo, sedID, int(time.time())))
 
-
+    
+        
     
     for (file, basepath) in file_list:
         
@@ -215,12 +232,15 @@ def deepcopy(file_list, folder, replace = None):
 def stats(file_list, title = ""):
     file_list = FileList.check(file_list)
 
-    size = __exec("du %s | cut  -f1 |(tr '\n' '+'; echo 0) | bc" % ' '.join(file_list))
+    size = __exec("du -k  %s | cut  -f1 |(tr '\n' '+'; echo 0) | bc" % ' '.join(file_list))
+    
 
     try:
         size = int(size)
     except Exception:
         return 0
+    
+    size = size * 1024
 
     lines = __exec("wc -l %s | tail -1" % ' '.join(file_list))
     lines =  re.findall(r'\d+(?:\.\d+)?', lines)
@@ -237,6 +257,8 @@ def stats(file_list, title = ""):
     console.info(  "   ~ Lines : %s  (%s per file)" % (lines, (lines / len(file_list))))
     console.info(  "   ~ Size : %s (%s per file)" % (hsizeof(size), hsizeof((size / len(file_list)))))
     console.info("")
+
+    return (len(file_list), lines, size)
 
 
 

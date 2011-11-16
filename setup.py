@@ -11,14 +11,14 @@ import logging
 
 setup(
     name = "puke",
-    version = "1.1.1",
+    version = "1.1.6",
     packages = ['puke'],
 
     scripts = [
        'bin/puke',
        'bin/puke.js.compress',
-       'bin/puke.css.compress',
-       'bin/puke.js.runner'
+       'bin/puke.css.compress'
+       #'bin/puke.js.runner'
     ],
 
     # Project uses reStructuredText, so ensure that the docutils get

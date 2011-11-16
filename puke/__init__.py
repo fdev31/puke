@@ -105,9 +105,9 @@ def run():
 
 
     if options.list_tasks:
-        logging.error("No tasks to execute. Please choose from: ")
+        console.confirm("Please choose from: ")
         printTasks()
-        sys.exit(1)
+        sys.exit(0)
 
     
     if options.clearcache:
@@ -117,7 +117,7 @@ def run():
             console.confirm("You're good to go !\n")
         else:
             console.confirm("Your room is already tidy, good boy :-) \n")
-        sys.exit(1)
+        sys.exit(0)
     
     try:
         args = args.strip()

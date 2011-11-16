@@ -119,8 +119,13 @@ class Require(object):
 
 		return result
 	
-	def __makeenvs(self, data ):		
-		for (node, value) in data.items():
+	def __makeenvs(self, data ):	
+		if isinstance(data, list):
+			dataIter = enumerate(data)
+		else:
+			dataIter = data.items()
+		
+		for (node, value) in dataIter:
 			if not isinstance(value, str):
 				self.__makeenvs(value)
 			elif value.startswith('${'):
@@ -132,7 +137,6 @@ class Require(object):
 				value = Env.get(name, default)
 				data[node] = value
 				
-
 
 	def reload(self):
 		files = self.__files

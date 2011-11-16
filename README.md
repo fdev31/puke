@@ -197,7 +197,7 @@ or
 
 ### Minifying (with closure for js, and yahoo ui for css):
 
-<pre>minify("build/test.js")</pre>
+<pre>minify("build/test.js", "build/test.min.js")</pre>
 
 ### Pack/unpack (gz, zip)
 Packing :
