@@ -15,7 +15,6 @@
       ' 
 </pre>      
 
-
 ## Technology
 
 We are using python, and a homemade system named "puke". It's quite similar to rake, jake, jasy, scons, etc, except:
@@ -268,7 +267,7 @@ deepcopy(list, "build/test.js", replace = sed)
 
 ### Using jslint (see [linting](Javascript-linting) for more):
 
-<pre>jslint(list, strict=False, nojsdoc=False, fix=False, relax=False)</pre>
+<pre>jslint(list, fix = False, relax = False, fail = True)</pre>
 
 
 ### Using jsdoctoolkit (see [documenting javascript](Javascript-documentation) for more):
