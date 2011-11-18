@@ -1,5 +1,20 @@
 # Building: puke it right
 
+   .-'"'-.
+  / `. ,' \
+ |  ,' `.  |
+ |   ___   |
+  \ ( . ) /
+   '-.:.-'
+     .:.
+     :::          
+     :::
+     ::.
+     '::
+      ' 
+      
+
+
 ## Technology
 
 We are using python, and a homemade system named "puke". It's quite similar to rake, jake, jasy, scons, etc, except:
