@@ -1,5 +1,6 @@
 # Building: puke it right
 
+<pre>
    .-'"'-.
   / `. ,' \
  |  ,' `.  |
@@ -12,7 +13,7 @@
      ::.
      '::
       ' 
-      
+</pre>      
 
 
 ## Technology
