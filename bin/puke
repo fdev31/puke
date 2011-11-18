@@ -134,6 +134,38 @@ else:
         else:
             prefs.append(d.location)
 
+        
+        #Patch closure
+
+
+        closure = pkg_resources.get_distribution('closure_linter').location
+        closure_lock = os.path.join(closure, 'closure_linter', 'puke.lock')
+        
+        if not os.path.isfile(closure_lock):
+            closure = os.path.join(closure, 'closure_linter', 'ecmalintrules.py')
+            
+            import shutil
+            shutil.move( closure, closure+"~" )
+
+            destination= open( closure, "w" )
+            source= open( closure+"~", "r" )
+            
+            content = source.read()
+            content = content.replace('MAX_LINE_LENGTH = 80', 'MAX_LINE_LENGTH = 120')
+            destination.write(content)
+
+            source.close()
+            destination.close()
+
+            os.remove(closure+"~" )
+
+
+            handle = file(closure_lock, 'a')
+            handle.close
+
+
+
+
 # Look first for 'puke-VERSION' in all of our preference libs
 libs.extend([os.path.join(x, puke_version) for x in prefs])
 libs.extend(prefs)

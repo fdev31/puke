@@ -82,36 +82,44 @@ def minify(in_file, out_file = None, verbose=False):
 
     new_size = os.path.getsize(out_file)
 
+    #avoid division by zero
+    if not new_size:
+        console.fail('Compression fail')
+
     
     console.info('  ~ Original: %.2f kB' % (org_size / 1024.0))
     console.info('  ~ Compressed: %.2f kB' % (new_size / 1024.0))
     console.confirm('  %s ( Reduction : %.1f%% )' % (out_file, (float(org_size - new_size) / org_size * 100)))
 
 
-def jslint(files, fix = False, strict = False, nojsdoc = False, relax = False):
+def jslint(files, fix = False, relax = False, fail = True):
     files = FileList.check(files)
 
     options = []
     command = ""
 
-    if strict == True:
-        options.append('--strict')
-    
-    if nojsdoc == True:
-        options.append('--nojsdoc')
-    
-    
+    options.append('--jslint_error=optional_type_marker')
+    options.append('--jslint_error=blank_lines_at_top_level')
+    options.append('--jslint_error=indentation')
+    options.append('--custom_jsdoc_tags=version,ignore,returns,example,function,requires,name,namespace,property,static,constant,default,location,copyright,memberOf,lends,fileOverview')
 
 
     if fix == True:
+        header = "Fix JS lint"
         command = "fixjsstyle %s %s "  % (  ' '.join(options) , ' '.join(files))
     else:
+        header = "JS lint"
         command = "gjslint %s %s "  % (  ' '.join(options) , ' '.join(files))
     
     if relax == True:
-        command += ' | grep -v "Line too long" | grep -v "Invalid JsDoc tag"'
-    
-    sh(command)
+        command += ' | grep -v "Line too long"'
+    result = sh(command, header = "%s (%s files)" % (header, len(files)) )
+
+    error = re.search('Found\s([0-9]+)\serrors', result)
+
+    if fail and error:
+        console.fail( ' :puke:\n' + error.group())
+
 
 def jsdoc(files, folder, template = None):
     files = FileList.check(files)
@@ -135,7 +143,7 @@ def sh (command, header = None, output = True):
     else:
         console.debug(command)
     
-    if output or header:
+    if output:
         console.header(' - '+header)
     
     result = ""
@@ -232,9 +240,17 @@ def deepcopy(file_list, folder, replace = None):
 def stats(file_list, title = ""):
     file_list = FileList.check(file_list)
 
+    if not title:
+        title = "Stats on files"
+
+    console.header(" - %s :" % title)
+
+    if len(file_list) == 0:
+        console.info(  "   No files ")
+        return False
+
     size = __exec("du -k  %s | cut  -f1 |(tr '\n' '+'; echo 0) | bc" % ' '.join(file_list))
     
-
     try:
         size = int(size)
     except Exception:
@@ -249,10 +265,7 @@ def stats(file_list, title = ""):
     else:
         lines = 0
     
-    if not title:
-        title = "Stats on files"
-
-    console.header(" - %s :" % title)
+    
     console.info(  "   ~ Files : %s" % len(file_list))
     console.info(  "   ~ Lines : %s  (%s per file)" % (lines, (lines / len(file_list))))
     console.info(  "   ~ Size : %s (%s per file)" % (hsizeof(size), hsizeof((size / len(file_list)))))

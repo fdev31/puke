@@ -25,7 +25,7 @@ def copyfile(src, dst):
     """ Copy src file to dst file. Both should be filenames, not directories. """
     
     if not os.path.isfile(src):
-        console.error("No such file: %s" % src)
+        console.fail("No such file: %s" % src)
         return False
 
     # First test for existance of destination directory
@@ -35,7 +35,7 @@ def copyfile(src, dst):
     try:
         shutil.copy2(src, dst)
     except IOError as ex:
-        console.error("Could not write file %s: %s" % (dst, ex))
+        console.fail("Could not write file %s: %s" % (dst, ex))
         
     return True
     
@@ -44,7 +44,7 @@ def updatefile(src, dst):
     """ Same as copyfile() but only do copying when source file is newer than target file """
     
     if not os.path.isfile(src):
-        console.error("No such file: %s" % src)
+        console.fail("No such file: %s" % src)
         return False
     
     try:

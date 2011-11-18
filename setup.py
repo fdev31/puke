@@ -11,7 +11,7 @@ import logging
 
 setup(
     name = "puke",
-    version = "1.1.6",
+    version = "1.1.15",
     packages = ['puke'],
 
     scripts = [
@@ -30,8 +30,8 @@ setup(
     author = "Emmanuel Tabard",
     author_email = "manu@webitup.fr",
     description = "Puke is a straightforward build system",
-    license = "http://www.apache.org/licenses/LICENSE-2.0",
+    license = "http://www.gnu.org/copyleft/gpl.html",
     keywords = "build system python",
-    url = 'http://github.com/roxee/puke',
+    url = 'http://github.com/webitup/puke',
     include_package_data = True
 )
