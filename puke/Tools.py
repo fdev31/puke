@@ -121,7 +121,7 @@ def jslint(files, fix = False, relax = False, fail = True):
         console.fail( ' :puke:\n' + error.group())
 
 
-def jsdoc(files, folder, template = None):
+def jsdoc(files, folder, template = None, fail = True):
     files = FileList.check(files)
 
     if not template:
@@ -130,7 +130,7 @@ def jsdoc(files, folder, template = None):
     jsdoc =  os.path.join(__get_datas_path(), 'jsdoc-toolkit')
     output = sh("java -jar %s/jsrun.jar %s/app/run.js -d=%s -t=%s -a  %s" % (jsdoc, jsdoc, folder, template, ' '.join(files)), header = "Generating js doc", output = True)
 
-    if output:
+    if fail and output:
         console.fail(output)
     
     console.confirm('  Doc generated in "%s"' % folder)
