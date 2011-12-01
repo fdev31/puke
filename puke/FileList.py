@@ -90,7 +90,13 @@ class FileList:
 		if isinstance(flist, FileList):
 			flist = flist.get(True)
 		elif isinstance(flist, str):
-			flist = [(flist, '')]
+
+			try:
+				cIsFile = isfile(flist)
+			except:
+				cIsFile = False
+				
+			flist = [(flist, '')] if cIsFile else FileList(flist).get(True)
 		else:
 			result = []
 			for f in flist:

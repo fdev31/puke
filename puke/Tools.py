@@ -1,4 +1,5 @@
 import os, os.path, shutil, logging, sys, filecmp, stat, re, time
+import shlex, subprocess
 
 
 from puke.FileList import *
@@ -135,30 +136,70 @@ def jsdoc(files, folder, template = None, fail = True):
     
     console.confirm('  Doc generated in "%s"' % folder)
 
+def patch(dir, patch):
+    # patch -p0 -N <
+
+    output = sh(['cd %s' % dir, 'patch -p0 -N -r pukepatch.rej < %s' % patch], output = False)
+    console.header(' - Patching %s with %s' % (dir, patch))
+    lines = output.split('\n')
+    for line in lines:
+        if 'can\'t find file to patch' in line:
+            console.fail('Path : can\'t find file to patch')
+            return False
+        
+        if line.startswith('patching'):
+            console.confirm('    ' + line)
+        elif 'ignored' in line:
+            console.warn('    ' + line)
+        else:
+            console.info('    ' + line)
+    
+    remove(join(dir, 'pukepatch.rej'))
+        
 
 
 def sh (command, header = None, output = True):
-    if not header:
+    if isinstance(command, list):
+        command = " ; ".join(command)
+
+
+    if header == None:
         header = 'exec "%s" ' % command
     else:
         console.debug(command)
     
-    if output:
+    if output and header != False:
         console.header(' - '+header)
     
     result = ""
-    p = os.popen(command)
-    for line in p.readlines():
+    args = shlex.split(command)
+    (stdout, error) = subprocess.Popen(command, stdout = subprocess.PIPE, shell = True, stderr= subprocess.PIPE).communicate()
+
+   
+    stdout = "%s\n%s" % (stdout if stdout else '', error if error else '')
+
+    lines = stdout.split('\n')
+    for line in lines:
+        if not line:
+            continue
 
         result += line
         
         if not line.endswith('\n'):
             result += '\n'
 
-        if output:
+        if output == True:
             console.info( '   ' +line)
    
-    p.close()
+    return result
+
+def prompt(message, default = ''):
+    console.warn(message)
+    result = sh('read toto && echo $toto', header = None, output=False)
+    result = result.strip()
+    if not result:
+        result = default
+    
     return result
 
 
@@ -210,7 +251,7 @@ def deepcopy(file_list, folder, replace = None):
         #console.warn("File : " + file +  " dest " + dst_file)
 
         if not forceRefresh:
-            res = updatefile(file, dst_file)
+            res = copyfile(file, dst_file, force = True)
         else:
             copyfile(file, dst_file)
             res = True

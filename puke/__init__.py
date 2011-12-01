@@ -9,22 +9,35 @@ from puke.Tools  import *
 from puke.FileList import *
 from puke.Sed import *
 from puke.Console import *
-from puke.FileSystem import *
 from puke.Env import *
 from puke.Cache import *
 from puke.Require import *
 from puke.Yak import *
+from puke.VirtualEnv import *
+import puke.System
+import puke.FileSystem
+import puke.Utils
+
 
 VERSION = 0.1
+__all__ = [
+            "main", "VERSION", "Error", "FileList", "Sed", "Env", "Require", "Yak", "VirtualEnv", "System", "FileSystem", "Utils",
+            "combine", "sh", "minify", "jslint", "jsdoc", "patch", "prompt", "deepcopy", "stats", "pack", "unpack", "hsizeof", "console"
+         ]
 
-__all__ = ["main", "VERSION"]
 
 import sys, logging, os, traceback
+import pkg_resources
 from optparse import OptionParser
 
 from colorama import *
 
 
+
+try:
+    sys.path.insert(1, os.getcwd())
+except:
+    pass
 
 def run():
     """ Main routine which should be called on startup """
@@ -40,6 +53,7 @@ def run():
     parser.add_option("-t", "--tasks",action="store_true",  dest="list_tasks", help="list tasks")
     parser.add_option("-l", "--log", dest="logfile", help="Write debug messages to given logfile")
     parser.add_option("-f", "--file", dest="file", help="Use the given build script")
+    parser.add_option("-p", "--patch",action="store_true",  dest="patch", help="Patch closure")
 
     (options, args) = parser.parse_args()
 
@@ -58,6 +72,12 @@ def run():
             logging.getLogger().setLevel(logging.WARN)
         else:
             logging.getLogger().setLevel(logging.INFO)
+
+
+    
+    
+
+
     
     # Define a Handler which writes INFO messages or higher to the sys.stderr
     consoleCfg = logging.StreamHandler()
@@ -75,6 +95,53 @@ def run():
         consoleCfg.setFormatter(logging.Formatter( ' %(message)s' + Style.RESET_ALL, '%H:%M:%S'))
 
     logging.getLogger().addHandler(consoleCfg)
+
+
+
+     #Patch closure
+
+
+    closure = pkg_resources.get_distribution('closure_linter').location
+    closure_lock = os.path.join(closure, 'closure_linter', 'puke.lock')
+    
+    if options.patch or not os.path.isfile(closure_lock):
+        closure = os.path.join(closure, 'closure_linter', 'ecmalintrules.py')
+        
+        try:
+            handle = source = destination = None
+            import shutil
+            shutil.move( closure, closure+"~" )
+            destination= open( closure, "w" )
+            source= open( closure+"~", "r" )
+            
+            content = source.read()
+            content = content.replace('MAX_LINE_LENGTH = 80', 'MAX_LINE_LENGTH = 120')
+            destination.write(content)
+
+            source.close()
+            destination.close()
+
+            os.remove(closure+"~" )
+
+
+            handle = file(closure_lock, 'a')
+            handle.close
+
+            if options.patch:
+                console.confirm('Patch successful')
+                sys.exit(0)
+        except Exception as e:
+            console.warn(">>> you should consider running \"sudo puke --patch\"")
+            if handle:
+                handle.close()
+            if source:
+                source.close()
+            if destination:
+                destination.close()
+            
+            if options.patch:
+                sys.exit(0)
+
 
     #
     # Find and execute build script
@@ -108,6 +175,8 @@ def run():
         console.confirm("Please choose from: ")
         printTasks()
         sys.exit(0)
+
+   
 
     
     if options.clearcache:

@@ -49,6 +49,7 @@ import yaml,json
 from puke.Env import *
 from puke.Console import *
 from puke.Yak import *
+from puke.Utils import *
 
 
 
@@ -68,10 +69,13 @@ class Require(object):
 
 	def merge(self, filename):
 		self.__files.append(filename)
-		self.__cfg.update(self.__load(filename))
+		self.__cfg = deepmerge(self.__cfg, self.__load(filename))
 		self.__makeenvs(self.__cfg)
 
 	def yak(self, selector):
+		if not self.get(selector):
+			return False
+			
 		for (node, value) in self.get(selector).items():			
 			Yak.set(node,value)
 		
@@ -100,26 +104,35 @@ class Require(object):
 		try:
 			stream = None
 			stream = file(filename, 'r')
+
+			payload = stream.read()
+			stream.close()
+
+			size = payload.strip()
+
 			ext = os.path.splitext(stream.name)[1]
 
 			result = None
 
-			if ext in ['.json', '.js']:
-				result = json.loads(stram)
-			elif ext in ['.yaml', '.yml']:
-				result = yaml.load(stream)
-
+			if size == 0:
+				result = { }
+				return result
 			
+			if ext in ['.json', '.js']:
+				result = json.loads(payload)
+			elif ext in ['.yaml', '.yml']:
+				result = yaml.load(payload)
+						
 		except Exception as error :
 			raise RequireError("Require load error : %s" % error)
 			result = None
-		finally:
-			if stream:
-				stream.close()
 
 		return result
 	
-	def __makeenvs(self, data ):	
+	def __makeenvs(self, data ):
+		if data == None:
+			return False
+
 		if isinstance(data, list):
 			dataIter = enumerate(data)
 		else:

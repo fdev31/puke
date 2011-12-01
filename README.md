@@ -26,34 +26,109 @@ We are using python, and a homemade system named "puke". It's quite similar to r
 
 ## Features
 
-Basic file manipulation, js linting via closure, minification via closure and YUI, scss parser, js documentation via jsdoctoolkit.
+Basic file manipulation, js linting via closure, minification via closure and YUI, scss parser, js documentation via jsdoctoolkit, VirtualEnv creation with package installation, system package check.
 
+## Changelog
+
+### 1.3
+
+ * Require.merge() makes now a deep merge
+ * sh() can take now multiple commandes : sh(['cd somepath', 'do something'])
+ * prompt('message', 'default') to prompt during the build
+ * New FileSystem api
+ * New System api
+ * New Utils api
+ * New VirtualEnv api
+ * few fixes
+ 
 
 ## Install
 
-Use brew (https://github.com/mxcl/homebrew) and get yourself a fresh python if you don't want to mess up your lovely Lion system.
+There is two ways to get there.
 
-<pre>brew install python</pre>
+Either the recommended sandboxed way (using brew, for *MacOSX*), read 1a.
 
-Update your .profile PATH if you're a new brew user.
+Or the "system" way (MacOSX and Linux), read 1b.
 
-<pre>export PATH="/usr/local/bin:/usr/local/share/python:$PATH"</pre>
+If you don't understand what I'm saying, you are on mac, so just follow 1a.
+If you do, then you already have a working python + easy_install environment, right? Move on to step 2.
 
-Get pip.
+### 1. Sandboxed way
 
-<pre>/usr/local/share/python/easy_install pip</pre>
+<pre>
+# Install XCode:
+http://developer.apple.com/technologies/xcode.html
 
-<pre>/usr/local/share/python/pip install --upgrade distribute</pre>
+# Install brew:
+sudo mkdir /usr/local
+sudo chmod g+rwx /usr/local
+sudo chown root:staff local
+/usr/bin/ruby -e "$(curl -fsSL https://raw.github.com/gist/323731)"
 
-Then get puke.
+# Install python with brew:
+brew install python
 
-<pre>pip install puke</pre>
+# Update your .profile so that the brew python is used
+echo 'export PATH="/usr/local/share/python:/usr/local/bin:$PATH"' >> ~/.profile
+source ~/.profile
 
-That's it. You're ready
+# Double-check that the sandboxed python is used
+which easy_install
+# Should output/usr/local/share/python/easy_install
+which python
+# Should output /usr/local/bin/python
+</pre>
 
-Whenever you want to upgrade to the latest version, just 
+Now go to step three.
+
+### 2. The system way
+
+You have nothing special to do, but you will need to be root in some of the following steps.
+
+Go to step three now.
+
+### 3. Install pip
+
+If on Mac:
+
+<pre>
+easy_install pip
+</pre>
+
+If on Linux, just make sure you got pip:
+
+<pre>
+# If debian based...
+sudo aptitude install python-pip
+# or do it whatever way pleases you
+</pre>
+
+
+### 4. Install puke
+
+<pre>
+# Get some puke on you
+pip install --upgrade puke
+</pre>
+
+Whenever you want to upgrade to the latest version, just do it again
 
 <pre>pip install puke --upgrade</pre>
+
+Yeah, that's it.
+
+### Oh, did I mentioned the BIG FAT WARNING MANU BUG?
+
+First time puke runs, it does patch some internal dependency (closure).
+So, IN THE CASE YOU USED THE SYSTEM WAY, do this after install:
+<pre>
+sudo puke --patch
+</pre>
+
+Don't forget to do that (yet again, only if you installed puke as ROOT) every time you install.
+
+That's it.
+
 
 ## Usage
 
@@ -76,6 +151,7 @@ Options:
   -l LOGFILE, --log=LOGFILE
                         Write debug messages to given logfile
   -f FILE, --file=FILE  Use the given build script
+  -p, --patch           Patch closure
 </pre>
 
 Can't remember your tasks ? Just puke it 
@@ -107,6 +183,24 @@ _Name your task "default" in order to have it executed by simply puke-ing_
 @task("Simple Test")
 def simple():
    console.log("Do something")
+</pre>
+
+### import python script
+<pre>
+| pukefile.py
+| helpers.py
+
+=> helpers.py
+from puke import *
+
+def test():
+  f = FileList('some/path')
+  print "success"
+
+=> pukefile.py
+import helpers
+
+helpers.test()
 </pre>
 
 
@@ -177,6 +271,12 @@ console.header("header")
 console.fail("fail")
 </pre>
 
+### Prompt :
+
+<pre>
+#prompt(message,default)
+answer = prompt('How are you doing ?', 'fuck off')
+</pre>
 
 ### Getting a FileList:
 
@@ -241,6 +341,8 @@ unpack('build/something.tar.gz', 'folder/test-unpack/')
 <pre>
 #get output
 pwd = sh("pwd")
+#multiple commands
+sh(['cd somepath', 'do something])
 </pre>
 
 ### Get FileList stats:
@@ -283,6 +385,185 @@ $ puke -c
  ...
  You're good to go !
 </pre> 
+
+### FileSystem
+
+Creates missing hierarchy levels for given directory
+<pre>
+FileSystem.makedir('somepath/to/dir')
+</pre>
+
+Get file content
+<pre>
+FileSystem.readfile('path/to/file')
+</pre>
+
+Remove file or dir (recursively)
+<pre>
+#With protection if you're trying to remove : './', '/', '~/', '~', '.', '..', '../'
+FileSystem.remove('something')
+</pre>
+
+Copy a file
+<pre>
+#creates dirs if dst doesn't exist
+#Does the copy only if the file doesn't exist or if the file has been modified
+#To force to copy anyway, use  force = True
+FileSystem.copyfile(src, dst)
+</pre>
+
+Create a file and write your content
+<pre>
+FileSystem.writefile('file', 'content')
+</pre>
+
+Check if the path exists
+<pre>
+FileSystem.exists('path')
+</pre>
+
+Check if the path is a file
+<pre>
+FileSystem.isfile('somefile')
+</pre>
+
+Check if the path is a dir
+<pre>
+FileSystem.path('somedir')
+</pre>
+
+Get an OS path  (eg : build/lib/folder on Unix)
+<pre>
+FileSystem.join('build', 'lib','folder')
+</pre>
+
+Get the absolute path
+<pre>
+FileSystem.abspath('./')
+</pre>
+
+### System
+
+Check platform
+<pre>
+if System.OS == System.MACOS:
+   #do something macos related
+elif System.OS == System.LINUX:
+   #do something linux related
+elif System.OS == System.WINDOWS:
+   #Achtung windows ...
+</pre>
+
+Get user login
+<pre>
+#Return None if something went wrong
+System.LOGIN
+</pre>
+
+Check if a system package is here :
+<pre>
+System.check_package('nginx')
+>>>   nginx is M.I.A
+>>>     => "brew install nginx"
+>>>   /!\ BUILD FAIL : nginx not installed
+
+#Check version too (>= <= > < ==)
+System.check_package('varnish', '>=3.0.1')
+>>> varnish : INSTALLED (3.0.0 not >=3.0.1)
+>>> * Continue anyway ? [Y/N default=Y]
+>>> N
+>>>  /!\ BUILD FAIL : Failed on version comp varnish 
+
+#Only check on specific platform (System.LINUX, System.MACOS, System.LINUX, "all")
+System.check_package('libcaca', platform=System.LINUX)
+</pre>
+
+Get package version
+<pre>
+System.get_package_version('uwsgi')
+>>> "0.9.9"
+</pre>
+
+### VirtualEnv (Create and manage virtualenvs)
+
+Create
+<pre>
+env = VirtualEnv()
+env.create('path/to/create/env', python='python3|python|python2.7|...')
+>>> * Creating env "test" ...
+>>>   virtualenv : OK (1.6.4)
+>>>   Python version : 3.2.2 ...
+>>>   Env "test"  created 
+</pre>
+
+Load an existing virtualenv
+<pre>
+env = VirtualEnv()
+env.load('test')
+</pre>
+
+install package
+<pre>
+env.install('webob')
+>>> * Install "webob" in env "test" ...
+>>>   Package "webob" is ready
+</pre>
+
+install package in a specific version
+<pre>
+env.install('webob', '1.1.1')
+>>> * Install "webob" in env "test" ...
+>>>   Package "webob" is ready
+</pre>
+
+install / force upgrade if installed
+<pre>
+env.install('webob', upgrade=True)
+</pre>
+
+upgrade package / all packages
+<pre>
+env.upgrade('webob')
+env.upgrade('*')
+</pre>
+
+Check package / auto fix
+<pre>
+#check if the named package respect the version
+env.check_package('webob', '>=1.1.1')
+
+#check it and fix if the cond fails (make an install or upgrade or downgrade)
+env.check_package('webob', '>=1.1.1', fix = True)
+</pre>
+
+List packages
+<pre>
+env.list()
+>>>  * List packages (env "test")
+>>>    - PIL (1.1.6)
+>>>    - PyYAML (3.10)
+>>>    - WebOb (1.2b2)
+</pre>
+
+Package info
+<pre>
+env.package_info('webob')
+</pre>
+
+Remove env
+<pre>
+env.remove()
+</pre>
+
+### Utils
+
+Merge two deep dicts non-destructively
+<pre>
+a = {'a': 1, 'b': {1: 1, 2: 2}, 'd': 6}
+b = {'c': 3, 'b': {2: 7}, 'd': {'z': [1, 2, 3]}}
+Utils.deepmerge(a, b)
+>>> {'a': 1, 'b': {1: 1, 2: 7}, 'c': 3, 'd': {'z': [1, 2, 3]}}
+</pre>
 
 
 ## Guidelines

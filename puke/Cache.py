@@ -40,7 +40,7 @@ class Cache:
 
 	@staticmethod
 	def check(id):
-		return fileexists(".pukecache/%s" % id)
+		return exists(".pukecache/%s" % id)
 
 	@staticmethod
 	def getPath(id):
@@ -48,7 +48,7 @@ class Cache:
 
 	@staticmethod
 	def getInfo(id):
-		if not fileexists(".pukecache/%s.meta" % id):
+		if not exists(".pukecache/%s.meta" % id):
 			return ""
 		
 		return readfile(".pukecache/%s.meta" % id)
@@ -57,7 +57,7 @@ class Cache:
 	@staticmethod
 	def clean():
 		try:
-			rm(".pukecache/")
+			remove(".pukecache/")
 			return True
 		except:
 			return False
