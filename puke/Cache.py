@@ -17,7 +17,8 @@ class Cache:
 			handler = urllib2.build_opener()
 			payload = handler.open(url).read()
 		except Exception as error:
-			console.error('HTTP fail %s (%s)' % (url, error))
+			console.fail('HTTP fail %s (%s)' % (url, error))
+			return False
 
 		return Cache.write(id, payload, url)
 

@@ -324,7 +324,10 @@ def stats(file_list, title = ""):
     lines = __exec("wc -l %s | tail -1" % ' '.join(file_list))
     lines =  re.findall(r'\d+(?:\.\d+)?', lines)
     if len(lines):
-        lines = int(lines.pop())
+        try:
+            lines = int(lines.pop(0))
+        except:
+            lines = 0
     else:
         lines = 0
     
