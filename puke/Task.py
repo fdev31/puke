@@ -2,6 +2,8 @@ import types
 import logging
 from puke.Error import *
 from puke.Console import *
+from pydoc import help
+from inspect import getcallargs
 
 __tasks__ = {}
 
@@ -17,12 +19,20 @@ def hasDefault():
     
     return True
     
-def executeTask(name):
+def executeTask(name, *args):
     if name in __tasks__:
         console.header("-------------------------------------\n * Executing task: %s (%s) \n -------------------------------------" % (name, __tasks__[name].desc), 1)
-        __tasks__[name]()
+        __tasks__[name](*args)
     else:
         raise PukeError("No such task: %s" % name)
+
+def printHelp(name = ""):
+    if name in __tasks__:
+        console.header("-------------------------------------\n * Help %s (%s) \n -------------------------------------" % (name, __tasks__[name].desc), 1)
+        help(__tasks__[name].getFunc())
+    else:
+        raise PukeError("No such task: %s" % name)
+    
         
 def printTasks():
     for name in __tasks__:
@@ -54,12 +64,24 @@ class Task:
         
 
     def __call__(self, *args, **kw):
-        retval = self.__func()
+        #try:
+        try:
+             getcallargs(self.__func, *args)
+        except TypeError as e:
+           printHelp(self.name)
+           console.fail("%s" % e)
+           raise
+       
+
+        retval = self.__func(*args)
         return retval
 
 
     def __repr__(self):
         return "Task: " + self.name
+
+    def getFunc(self):
+        return self.__func
 
 
 

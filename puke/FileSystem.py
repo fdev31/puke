@@ -123,6 +123,9 @@ def join(*args):
 def abspath(path):
     return os.path.abspath(path)
 
+def basename(path):
+    return os.path.basename(path)
+
 
 
 class FileSystemError(Exception):

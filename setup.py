@@ -11,7 +11,7 @@ import logging
 
 setup(
     name = "puke",
-    version = "1.3.3",
+    version = "1.3.8",
     packages = ['puke'],
 
     scripts = [

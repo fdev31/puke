@@ -56,7 +56,7 @@ from puke.Utils import *
 class Require(object):
 
 	__sharedState = {}
-	__globalPattern = re.compile('\$\{([^}]+)\}[|]?(.*)')
+	__globalPattern = re.compile('\$\{([^}]+)\}([|])?(.*)')
 
 
 	def __init__(self, filename):
@@ -75,7 +75,7 @@ class Require(object):
 	def yak(self, selector):
 		if not self.get(selector):
 			return False
-			
+
 		for (node, value) in self.get(selector).items():			
 			Yak.set(node,value)
 		
@@ -139,15 +139,24 @@ class Require(object):
 			dataIter = data.items()
 		
 		for (node, value) in dataIter:
-			if not isinstance(value, str):
+			if not isinstance(value, (str, int)):
 				self.__makeenvs(value)
 			elif value.startswith('${'):
 				m = self.__globalPattern.match(value)
 				if not m:
 					continue
 				
-				(name, default) = m.groups()
+				(name, isDefault , extValue) = m.groups()
+				if isDefault:
+					default = extValue
+				else:
+					default = ''
+
 				value = Env.get(name, default)
+
+				if not isDefault:
+					value += extValue
+
 				data[node] = value
 				
 

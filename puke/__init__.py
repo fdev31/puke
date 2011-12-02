@@ -54,6 +54,7 @@ def run():
     parser.add_option("-l", "--log", dest="logfile", help="Write debug messages to given logfile")
     parser.add_option("-f", "--file", dest="file", help="Use the given build script")
     parser.add_option("-p", "--patch",action="store_true",  dest="patch", help="Patch closure")
+    parser.add_option("-i", "--info",action="store_true",  dest="info", help="puke task --info show task informations")
 
     (options, args) = parser.parse_args()
 
@@ -201,18 +202,26 @@ def run():
             printTasks()
             sys.exit(1)
 
-    for name in args:
-        if not os.path.basename(name) in pukefiles:
-            executeTask(name.strip())
-        
-def gettraceback():
+    
+    name = args.pop(0)
+
+    if options.info:
+        printHelp(name.strip())
+    else:
+        executeTask(name.strip(), *args)
+            
+
+
+def gettraceback(level = 0):
     trace = ""
     exception = ""
     exc_list = traceback.format_exception_only (sys.exc_type, sys.exc_value)
+
+    reverse = -1 - level
     for entry in exc_list:
         exception += entry
     tb_list = traceback.format_tb(sys.exc_info()[2])
-    for entry in tb_list[-1]:
+    for entry in tb_list[reverse]:
         trace += entry  
     return trace  
 

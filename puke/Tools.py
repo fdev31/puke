@@ -11,6 +11,17 @@ from puke.Compress import *
 
 from puke.Cache import *
 
+import signal
+
+
+class Alarm(Exception):
+    pass
+
+def alarm_handler(signum, frame):
+    raise Alarm
+
+
+
 
 CSS_COMPRESSOR = sys.argv[0] + '.css.compress'
 JS_COMPRESSOR = sys.argv[0] + '.js.compress'
@@ -158,7 +169,7 @@ def patch(dir, patch):
         
 
 
-def sh (command, header = None, output = True):
+def sh (command, header = None, output = True, timeout = None):
     if isinstance(command, list):
         command = " ; ".join(command)
 
@@ -173,8 +184,19 @@ def sh (command, header = None, output = True):
     
     result = ""
     args = shlex.split(command)
-    (stdout, error) = subprocess.Popen(command, stdout = subprocess.PIPE, shell = True, stderr= subprocess.PIPE).communicate()
 
+    if timeout:
+        signal.signal(signal.SIGALRM, alarm_handler)
+        signal.alarm(timeout)  # 5 seconds
+
+    try:
+        cProcess = subprocess.Popen(command, stdout = subprocess.PIPE, shell = True, stderr= subprocess.PIPE)
+        (stdout, error) = cProcess.communicate()
+        signal.alarm(0)
+    except Alarm:
+        console.warn('taking too long (%s)' % command)
+        cProcess.kill()
+        stdout = error = ""
    
     stdout = "%s\n%s" % (stdout if stdout else '', error if error else '')
 

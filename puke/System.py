@@ -91,11 +91,14 @@ def get_package_version(name, index = 0):
 
 	if check[index] == 'hard':
 		if _PLATFORM == MACOS:
-			version = sh('brew info %s | head -n 1' % (name), header = None, output = False)
+
+			version = sh("toto='%s';test=`brew info $toto | grep -Ei '(?not installed|error)'`;\
+							 if [[ -n \"$test\" ]]; then echo \"\"; else echo `brew info $toto | head -n 1`; fi" % (name), header = None, output = False)
 		else:
-			version = sh('aptitude show %s | grep -i "version:"' % (name), header = None, output = False)
+			version = sh("toto='%s';test=`aptitude show $toto | grep -Ei '(?not installed|error)'`;\
+							 if [[ -n \"$test\" ]]; then echo \"\"; else echo `aptitude show $toto | grep -i \"version:\"`; fi" % (name), header = None, output = False)
 	else:
-		version = sh('%s %s' % (name,check[index]), header = None, output = False)
+		version = sh('%s %s' % (name,check[index]), header = None, output = False, timeout=3)
 
 	version = re_v.findall(version)
 	if version:
