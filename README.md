@@ -39,6 +39,9 @@ Basic file manipulation, js linting via closure, minification via closure and YU
  * New System api
  * New Utils api
  * New VirtualEnv api
+ * patch('dir/to/patch', patchfile) (Supports unix patch format only : man patch)
+ * Task parameters (puke task arg1 arg2)
+ * Task infos (puke task -i  docstring style)
  * few fixes
  
 
@@ -69,7 +72,7 @@ sudo chown root:staff local
 brew install python
 
 # Update your .profile so that the brew python is used
-echo 'export PATH="/usr/local/share/python:/usr/local/bin:$PATH"' >> ~/.profile
+echo 'export PATH="/usr/local/share/python:/usr/local/bin:/usr/local/sbin:$PATH"' >> ~/.profile
 source ~/.profile
 
 # Double-check that the sandboxed python is used
@@ -219,7 +222,40 @@ def default():
 @task("Simple Test")
 def simple():
    console.log("Do something")
+
 </pre>
+
+### Executing tasks with args
+
+Your pukefile
+<pre>
+@task('with args')
+def test(required, optional = 'default'):
+   """Python docstring style comment"""
+   print "Required : %s" % required
+   print "Optional : %s" % optional
+</pre>
+
+Execute puke
+<pre>
+puke test value
+>>> Required : value
+>>> Optional : default
+</pre>
+
+Need help with your params ?
+<pre>
+puke test --info
+>>> -------------------------------------
+>>> * Help test (task description) 
+>>> -------------------------------------
+>>> Help on function test in module puke:
+>>>
+>>> test(required, optional = 'default')
+>>>    Python docstring style comment
+
+</pre>
+
 
 ### Require (json / yaml)
 
@@ -247,6 +283,11 @@ r.yak('params')
 @task("Simple Test")
 def simple():
    console.log("Easy to get my conf", Yak.build_dir, Yak.string)
+
+#Check if your param exists
+if 'build_dir' in Yak:
+   print "yes"
+
 </pre>
 
 ### Straight access to environment variables
@@ -313,6 +354,11 @@ or
 ### Minifying (with closure for js, and yahoo ui for css):
 
 <pre>minify("build/test.js", "build/test.min.js")</pre>
+
+### Patch (unix patch format)
+<pre>
+patch('dir/to/patch', patchfile)
+</pre>
 
 ### Pack/unpack (gz, zip)
 Packing :
@@ -440,6 +486,12 @@ FileSystem.join('build', 'lib','folder')
 Get the absolute path
 <pre>
 FileSystem.abspath('./')
+</pre>
+
+Get file name
+<pre>
+FileSystem.basename('/path/to/toto.py')
+>>> 'toto.py'
 </pre>
 
 ### System
