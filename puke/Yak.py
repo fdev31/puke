@@ -10,6 +10,8 @@ class Yak(dict):
 		setattr(Yak, key, value)
 
 	@staticmethod
-	def get(key, value):
-		getattr(Yak, key, value)
-
+	def get(key, default = None):
+		try:
+			return getattr(Yak, key)
+		except:
+			return default
