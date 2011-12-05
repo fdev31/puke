@@ -18,10 +18,10 @@ re_c = re.compile('(==|<=|>=|<|>)(.*)')
 
 def check_package(name, compVersion = None, platform = "all"):
 
-	if platform.lower() == "linux" and _PLATFORM != LINUX:
+	if platform.lower() == LINUX.lower() and _PLATFORM != LINUX:
 		return True
 	
-	if "mac" in platform.lower() and _PLATFORM != MACOS:
+	if MACOS.lower() in platform.lower() and _PLATFORM != MACOS:
 		return True
 
 	check = sh("which %s" % name, header = None, output = False)
@@ -40,10 +40,10 @@ def check_package(name, compVersion = None, platform = "all"):
 				console.error('')
 				console.fail('%s not installed' % name)
 		else:
-			check = sh("aptitude show %s | grep -i -E \"(unable to locate|error)\"" % name, header=None, output=False)
+			check = sh("aptitude show %s | grep -i -E \"(unable to locate|not installed)\"" % name, header=None, output=False)
 			check = check.lower().strip()
 			
-			if "unable to locate" in check or 'error' in check:
+			if "unable to locate" in check or 'not installed' in check:
 				console.error('%s is M.I.A' % name)
 				console.log(' => "aptitude install %s"' % name)
 				console.error('')
@@ -95,7 +95,7 @@ def get_package_version(name, index = 0):
 			version = sh("toto='%s';test=`brew info $toto | grep -Ei '(?not installed|error)'`;\
 							 if [[ -n \"$test\" ]]; then echo \"\"; else echo `brew info $toto | head -n 1`; fi" % (name), header = None, output = False)
 		else:
-			version = sh("toto='%s';test=`aptitude show $toto | grep -Ei '(?not installed|error)'`;\
+			version = sh("toto='%s';test=`aptitude show $toto | grep -Ei '(?not installed|unable to locate)'`;\
 							 if [[ -n \"$test\" ]]; then echo \"\"; else echo `aptitude show $toto | grep -i \"version:\"`; fi" % (name), header = None, output = False)
 	else:
 		version = sh('%s %s' % (name,check[index]), header = None, output = False, timeout=3)

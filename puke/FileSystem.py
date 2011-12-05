@@ -1,6 +1,7 @@
-import os, time
+import os, time, pwd
 import shutil
 from puke.Console import *
+import Utils
 
 def makedir(dirname):
     """ Creates missing hierarchy levels for given directory """
@@ -125,6 +126,46 @@ def abspath(path):
 
 def basename(path):
     return os.path.basename(path)
+
+def chown(path, uname = None, gname = None):
+    isfile(path)
+
+    if not uname:
+        uid = os.stat(path).st_uid
+
+    if not gname:
+        gid = os.stat(path).st_gid
+
+    if not isinstance(uname, int) and uname != None:
+        uid = getUid(uname)
+    
+    if not isinstance(gname, int) and gname != None:
+        gid = getGid(gname)
+
+    return os.chown(path, uid, gid)
+
+def chmod(path, mode):
+    isfile(path)
+
+
+    if not isinstance(mode, int):
+        mode = Utils.octalmode(path, mode)
+    else:
+        mode = int("%s" % mode, 8)
+    
+    return os.chmod(path, mode)
+
+def getUid(name):
+    try:
+        return pwd.getpwnam(name)[2]
+    except:
+        return None
+
+def getGid(name):
+    try:
+        return grp.getgrnam(name)[2]
+    except:
+        return None
 
 
 
