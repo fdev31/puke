@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 import re, platform, os, pwd
-from puke.Tools import *
+from puke.ToolsExec import *
 from distutils import version
 
 
@@ -76,12 +79,8 @@ def check_package(name, compVersion = None, platform = "all"):
 		console.confirm('%s : OK (%s)' % (name,pVersion))
 	else:
 		console.error('%s : OK (%s not %s)' % (name,pVersion, compVersion))
-		resp = prompt('* Continue anyway ? [Y/N default=Y]')
-		if resp.lower().strip() == "n":
-			console.error('')
-			console.fail('Failed on version comp %s ' % name)
-		else:
-			console.confirm('%s : OK (%s)' % (name,pVersion))
+
+		console.fail('Failed on version comp %s ' % name)
 
 	return True
 

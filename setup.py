@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 
 from setuptools import setup, find_packages
-import sys
+import sys, os
+import pkg_resources
+
 
 major, minor = sys.version_info[:2]
 
@@ -11,7 +15,7 @@ import logging
 
 setup(
     name = "puke",
-    version = "1.3.9a",
+    version = "1.5.0b22",
     packages = ['puke'],
 
     scripts = [
@@ -22,7 +26,7 @@ setup(
 
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
-    install_requires = ['pyscss', 'closure_linter', 'colorama', 'PyYAML'],
+    install_requires = ['pyscss', 'closure_linter', 'colorama', 'pyyaml'],
     dependency_links = ['http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz'],
   
     # metadata for upload to PyPI

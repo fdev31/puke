@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 import tarfile
 import zipfile
+import datetime, time
 
 class Compress:
 
@@ -9,6 +13,9 @@ class Compress:
 		ext = file.split('.')[-1]
 		if ext == "zip":
 			i =  CompressZip()
+		elif ext == "bz2":
+			mode += ":bz2"
+			i = CompressTar()
 		else:
 			mode += ":gz"
 			i = CompressTar()
@@ -61,7 +68,10 @@ class CompressInterface():
 	def __iter__(self):
 		raise NotImplemented()
 
+class CompressInfo():
 
+	mode = 0
+	mtime = 0
 
 class CompressTar(CompressInterface):
 	def __init__(self):
@@ -78,7 +88,18 @@ class CompressTar(CompressInterface):
 		return tarfile.is_tarfile(file)
 
 	def extract(self, file):
-		return self.__instance.extractfile(file).read()
+		res = self.__instance.extractfile(file)
+
+		if not res:
+			return (None, None)
+
+		infos = CompressInfo()
+		tarinfo = self.__instance.getmember(file)
+
+		infos.mode = int("%o" % tarinfo.mode)
+		infos.mtime = tarinfo.mtime
+		
+		return (res.read(), infos)
 
 	def __iter__(self):
 		return iter(self.__instance.getnames())
@@ -106,7 +127,12 @@ class CompressZip(CompressInterface):
 		return zipfile.is_zipfile(file)
 
 	def extract(self, file):
-		return self.__instance.read(file)
+
+		infos = CompressInfo()
+
+		infos.mode = int( "%o" % ((self.__instance.getinfo(file).external_attr >> 16L) & 0777))
+		infos.mtime = time.mktime(datetime.datetime(*self.__instance.getinfo(file).date_time[0:6]).timetuple())
+		return (self.__instance.read(file), infos)
 
 	def __iter__(self):
 		for item in self.__instance.namelist():

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 import urllib2
 import hashlib
 
@@ -25,10 +28,11 @@ class Cache:
 
 	@staticmethod
 	def write(id, payload, info = None):
-		writefile(".pukecache/%s" % id, payload)
+
+		writefile(join(".pukecache", "%s" % id), payload)
 
 		if info:
-			writefile(".pukecache/%s.meta" % id, info)
+			writefile(join(".pukecache", "%s.meta" % id), info)
 
 		return Cache.getPath(id)
 		
@@ -37,28 +41,28 @@ class Cache:
 		if not Cache.check(id):
 			return None
 		
-		return readfile(".pukecache/%s" % id)
+		return readfile(join(".pukecache", "%s" % id))
 
 	@staticmethod
 	def check(id):
-		return exists(".pukecache/%s" % id)
+		return exists(join(".pukecache", "%s" % id))
 
 	@staticmethod
 	def getPath(id):
-		return ".pukecache/%s" % id
+		return join(".pukecache", "%s" % id)
 
 	@staticmethod
 	def getInfo(id):
-		if not exists(".pukecache/%s.meta" % id):
+		if not exists(join(".pukecache","%s.meta" % id)):
 			return ""
 		
-		return readfile(".pukecache/%s.meta" % id)
+		return readfile(join(".pukecache", "%s.meta" % id))
 
 
 	@staticmethod
 	def clean():
 		try:
-			remove(".pukecache/")
+			remove(".pukecache")
 			return True
 		except:
 			return False

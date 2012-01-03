@@ -1,11 +1,15 @@
-#
-# puke - JavaScript Tooling Framework
-# Copyright 2010-2011 Sebastian Werner
-#
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
+import platform
+
+if platform.system() == 'Windows':
+    from compat import *
 
 from puke.Error import *
 from puke.Task  import *
 from puke.Tools  import *
+from puke.ToolsExec  import *
 from puke.FileList import *
 from puke.Sed import *
 from puke.Console import *
@@ -14,6 +18,7 @@ from puke.Cache import *
 from puke.Require import *
 from puke.Yak import *
 from puke.VirtualEnv import *
+from puke.Std import *
 import puke.System
 import puke.FileSystem
 import puke.Utils
@@ -21,7 +26,7 @@ import puke.Utils
 
 VERSION = 0.1
 __all__ = [
-            "main", "VERSION", "Error", "FileList", "Sed", "Env", "Require", "Yak", "VirtualEnv", "System", "FileSystem", "Utils",
+            "main", "VERSION", "Error", "FileList", "Sed", "Std", "Env", "Require", "Yak", "VirtualEnv", "System", "FileSystem", "Utils",
             "combine", "sh", "minify", "jslint", "jsdoc", "patch", "prompt", "deepcopy", "stats", "pack", "unpack", "hsizeof", "console"
          ]
 
@@ -101,47 +106,51 @@ def run():
 
      #Patch closure
 
-
-    closure = pkg_resources.get_distribution('closure_linter').location
-    closure_lock = os.path.join(closure, 'closure_linter', 'puke.lock')
-    
-    if options.patch or not os.path.isfile(closure_lock):
-        closure = os.path.join(closure, 'closure_linter', 'ecmalintrules.py')
+    try:
+        closure = pkg_resources.get_distribution('closure_linter').location
+        closure_lock = os.path.join(closure, 'closure_linter', 'puke.lock')
         
-        try:
-            handle = source = destination = None
-            import shutil
-            shutil.move( closure, closure+"~" )
-            destination= open( closure, "w" )
-            source= open( closure+"~", "r" )
+        if options.patch or not os.path.isfile(closure_lock):
+            closure = os.path.join(closure, 'closure_linter', 'ecmalintrules.py')
             
-            content = source.read()
-            content = content.replace('MAX_LINE_LENGTH = 80', 'MAX_LINE_LENGTH = 120')
-            destination.write(content)
+            try:
+                handle = source = destination = None
+                import shutil
+                shutil.move( closure, closure+"~" )
+                destination= open( closure, "w" )
+                source= open( closure+"~", "r" )
+                
+                content = source.read()
+                content = content.replace('MAX_LINE_LENGTH = 80', 'MAX_LINE_LENGTH = 120')
+                destination.write(content)
 
-            source.close()
-            destination.close()
-
-            os.remove(closure+"~" )
-
-
-            handle = file(closure_lock, 'a')
-            handle.close
-
-            if options.patch:
-                console.confirm('Patch successful')
-                sys.exit(0)
-        except Exception as e:
-            console.warn(">>> you should consider running \"sudo puke --patch\"")
-            if handle:
-                handle.close()
-            if source:
                 source.close()
-            if destination:
                 destination.close()
-            
-            if options.patch:
-                sys.exit(0)
+
+                os.remove(closure+"~" )
+
+
+                handle = file(closure_lock, 'a')
+                handle.close
+
+                if options.patch:
+                    console.confirm('Patch successful')
+                    sys.exit(0)
+            except Exception as e:
+                console.warn(">>> you should consider running \"sudo puke --patch\"")
+                if handle:
+                    handle.close()
+                if source:
+                    source.close()
+                if destination:
+                    destination.close()
+                
+                if options.patch:
+                    sys.exit(0)
+
+
+    except Exception as e:
+        console.error('Closure linter not found %s' % e)
 
 
     #
@@ -202,14 +211,14 @@ def run():
             printTasks()
             sys.exit(1)
 
-    
-    name = args.pop(0)
-
-    if options.info:
-        printHelp(name.strip())
     else:
-        executeTask(name.strip(), *args)
-            
+        name = args.pop(0)
+
+        if options.info:
+            printHelp(name.strip())
+        else:
+            executeTask(name.strip(), *args)
+                
 
 
 def gettraceback(level = 0):

@@ -1,5 +1,8 @@
-import os, time, pwd
-import shutil
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
+import os, time, pwd, grp
+import shutil, hashlib
 from puke.Console import *
 import Utils
 
@@ -20,6 +23,7 @@ def makedir(dirname):
 
 def readfile(file):
     data = None
+    fh = None
     try:
         fh = open(file)
         data = fh.read()
@@ -32,6 +36,29 @@ def readfile(file):
 
 
     return data
+
+def checksum (file):
+    block_size=2**20
+    md5 = hashlib.md5()
+    data = None
+    fh = None
+    try:
+        fh = open(file, 'rb')
+        while True:
+            data = fh.read(block_size)
+            if not data:
+                break
+            md5.update(data)
+
+        fh.close()
+    except Exception as e:
+        raise FileSystemError(e)
+    finally:
+        if fh:
+            fh.close()
+    
+    
+    return md5.hexdigest()
 
 def remove(file):
 
@@ -60,7 +87,7 @@ def copyfile(src, dst, force = False):
         
         # Only accecpt equal modification time as equal as copyfile()
         # syncs over the mtime from the source.
-        if force and src_mtime == dst_mtime:
+        if force and src_mtime <= dst_mtime:
             return False
         
     except OSError:
@@ -109,7 +136,7 @@ def writefile(dst, content, mtime = None):
     
     # Open file handle and write
     try:
-        handle = open(dst, mode="w")
+        handle = open(dst, mode="wb")
         handle.write(content)
         handle.close()
     except Exception as e:
@@ -141,6 +168,10 @@ def chown(path, uname = None, gname = None):
     
     if not isinstance(gname, int) and gname != None:
         gid = getGid(gname)
+
+    
+    if uid == None or gid == None:
+        raise FileSystemError('Invalid uname or gname')
 
     return os.chown(path, uid, gid)
 

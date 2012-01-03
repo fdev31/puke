@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 from puke.Tools import *
+from puke.ToolsExec import *
 from puke.FileSystem import *
 import System
 from distutils import version

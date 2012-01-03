@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 
 """REquire parser
 
@@ -76,7 +77,11 @@ class Require(object):
 		if not self.get(selector):
 			return False
 
-		for (node, value) in self.get(selector).items():			
+		for (node, value) in self.get(selector).items():
+			existing = Yak.get(node)
+			if existing != None and not isinstance(existing, str):
+				value = deepmerge(Yak.get(node), value)
+							
 			Yak.set(node,value)
 		
 		

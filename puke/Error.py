@@ -1,7 +1,5 @@
-#
-# Jasy - JavaScript Tooling Framework
-# Copyright 2010-2011 Sebastian Werner
-#
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 
 class PukeError(Exception):
     pass

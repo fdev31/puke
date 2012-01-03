@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 import os, os.path, shutil, logging, sys, filecmp, stat, re, time
-import shlex, subprocess
 
 
 from puke.FileList import *
@@ -7,18 +9,14 @@ from puke.Console import *
 from scss import Scss
 from puke.FileSystem import *
 from puke.Compress import *
+from puke.Std import *
+from puke.ToolsExec import *
+
 
 
 from puke.Cache import *
+import System
 
-import signal
-
-
-class Alarm(Exception):
-    pass
-
-def alarm_handler(signum, frame):
-    raise Alarm
 
 
 
@@ -42,11 +40,12 @@ def combine(in_files, out_file, verbose=False, replace = None):
     isCSS = False
     combined = ""
 
-    if len(in_files) > 0 and __get_ext(in_files[0]) in ['css', 'scss']:
+    for f in in_files:
+        if not __get_ext(f) in ['css', 'scss']:
+            continue
+
         isCSS = True
         combined = "@option compress: no;"
-
-
     
 
     for f in in_files:
@@ -71,6 +70,8 @@ def combine(in_files, out_file, verbose=False, replace = None):
     writefile(out_file, combined)
 
 def minify(in_file, out_file = None, verbose=False):
+
+    System.check_package('java')
 
     if not isinstance(in_file, str):
         raise Exception("Minify : single file only")
@@ -105,6 +106,8 @@ def minify(in_file, out_file = None, verbose=False):
 
 
 def jslint(files, fix = False, relax = False, fail = True):
+    System.check_package('java')
+
     files = FileList.check(files)
 
     options = []
@@ -113,7 +116,7 @@ def jslint(files, fix = False, relax = False, fail = True):
     options.append('--jslint_error=optional_type_marker')
     options.append('--jslint_error=blank_lines_at_top_level')
     options.append('--jslint_error=indentation')
-    options.append('--custom_jsdoc_tags=version,ignore,returns,example,function,requires,name,namespace,property,static,constant,default,location,copyright,memberOf,lends,fileOverview')
+    options.append('--custom_jsdoc_tags=homepage,version,ignore,returns,example,function,requires,name,namespace,property,static,constant,default,location,copyright,memberOf,lends,fileOverview')
 
 
     if fix == True:
@@ -134,6 +137,8 @@ def jslint(files, fix = False, relax = False, fail = True):
 
 
 def jsdoc(files, folder, template = None, fail = True):
+    System.check_package('java')
+
     files = FileList.check(files)
 
     if not template:
@@ -147,10 +152,10 @@ def jsdoc(files, folder, template = None, fail = True):
     
     console.confirm('  Doc generated in "%s"' % folder)
 
-def patch(dir, patch):
+def patch(dir, patch, p=0):
     # patch -p0 -N <
 
-    output = sh(['cd %s' % dir, 'patch -p0 -N -r pukepatch.rej < %s' % patch], output = False)
+    output = sh(['cd %s' % dir, 'patch -p%s -N -r pukepatch.rej < %s' % (p, patch)], output = False)
     console.header(' - Patching %s with %s' % (dir, patch))
     lines = output.split('\n')
     for line in lines:
@@ -165,55 +170,11 @@ def patch(dir, patch):
         else:
             console.info('    ' + line)
     
-    remove(join(dir, 'pukepatch.rej'))
-        
-
-
-def sh (command, header = None, output = True, timeout = None):
-    if isinstance(command, list):
-        command = " ; ".join(command)
-
-
-    if header == None:
-        header = 'exec "%s" ' % command
-    else:
-        console.debug(command)
-    
-    if output and header != False:
-        console.header(' - '+header)
-    
-    result = ""
-    args = shlex.split(command)
-
-    if timeout:
-        signal.signal(signal.SIGALRM, alarm_handler)
-        signal.alarm(timeout)  # 5 seconds
-
     try:
-        cProcess = subprocess.Popen(command, stdout = subprocess.PIPE, shell = True, stderr= subprocess.PIPE)
-        (stdout, error) = cProcess.communicate()
-        signal.alarm(0)
-    except Alarm:
-        console.warn('taking too long (%s)' % command)
-        cProcess.kill()
-        stdout = error = ""
-   
-    stdout = "%s\n%s" % (stdout if stdout else '', error if error else '')
+        remove(join(dir, 'pukepatch.rej'))
+    except:
+        pass
 
-    lines = stdout.split('\n')
-    for line in lines:
-        if not line:
-            continue
-
-        result += line
-        
-        if not line.endswith('\n'):
-            result += '\n'
-
-        if output == True:
-            console.info( '   ' +line)
-   
-    return result
 
 def prompt(message, default = ''):
     console.warn(message)
@@ -265,7 +226,7 @@ def deepcopy(file_list, folder, replace = None):
     for (file, basepath) in file_list:
         
         if basepath:
-            dst_file = __pretty(file).replace(basepath, '').strip('/')
+            dst_file = __pretty(file).replace(basepath, '').strip(os.sep)
             dst_file = os.path.join(folder,dst_file)
         else:
             dst_file = os.path.join(folder,os.path.basename(__pretty(file)))
@@ -287,7 +248,7 @@ def deepcopy(file_list, folder, replace = None):
             data = __replace(data, replace)
 
             fh.close()
-            writefile(dst_file, data, os.path.getmtime(file))
+            writefile(dst_file, data)
             
 
 
@@ -357,7 +318,7 @@ def pack (file_list, output):
 
     console.confirm(" %s packed" % output)
 
-def unpack (pack_file, output):
+def unpack (pack_file, output, extract = None):
     
     console.header( "- Unpacking %s to %s " % (pack_file, output))
 
@@ -371,11 +332,28 @@ def unpack (pack_file, output):
 
     count = 0
     for fname in comp:
-        data = comp.extract(fname)
+        if extract and extract not in fname:
+            continue
+
+        (data, infos) = comp.extract(fname)
+        
+       
+        #folder
+        if not data:
+            continue
         
         output_file = os.path.join(output, fname)
+
+
+        if exists(output_file) and os.path.getmtime(output_file) == infos.mtime:
+            continue
+            
         console.info(' + %s' % __pretty(output_file))
-        writefile(output_file, data)
+        writefile(output_file, data, mtime=infos.mtime)
+
+        if infos.mode:
+            chmod(output_file, infos.mode)
+
         count += 1
     
     comp.close()
@@ -383,6 +361,9 @@ def unpack (pack_file, output):
 
 ### WIP
 def __jasmine(files):
+
+    System.check_package('java')
+
     files = [files]
 
     envjs =  os.path.join(__get_datas_path(), 'envjs')
@@ -430,7 +411,7 @@ def __replace(data, replace):
 
 def __pretty(filename):
     if filename.startswith('.pukecache'):
-        return Cache.getInfo(filename.split('/').pop())
+        return Cache.getInfo(filename.split(os.sep).pop())
     
     return filename
 

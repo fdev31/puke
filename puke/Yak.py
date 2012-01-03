@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+
 class Yak(dict):
 
 	class __metaclass__(type):
