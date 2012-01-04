@@ -21,7 +21,7 @@ class FileList:
 		self.__filter = ""
 
 
-		if dir.startswith('http'):
+		if dir.startswith('http') or dir.startswith('ftp'):
 			self.__list.append((dir,''))
 			return
 
@@ -110,7 +110,7 @@ class FileList:
 
 		result = []
 		for (f, p) in flist:
-			if f.startswith('http'):
+			if f.startswith('http') or f.startswith('ftp'):
 
 				f = Cache.fetchHttp(f)
 			

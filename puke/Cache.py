@@ -7,6 +7,8 @@ import hashlib
 from puke.Console import *
 from puke.FileSystem import *
 
+import urlparse, StringIO, os, ftplib
+
 class Cache:
 
 	@staticmethod
@@ -16,9 +18,22 @@ class Cache:
 		if Cache.check(id):
 			return Cache.getPath(id)
 		
+		infos = urlparse.urlparse(url)
 		try:
-			handler = urllib2.build_opener()
-			payload = handler.open(url).read()
+			console.debug('Cache#Fetching remote file %s' % url)
+
+			if infos.scheme == 'ftp':
+				buffer = StringIO.StringIO()
+
+				ftp = ftplib.FTP(infos.netloc)
+				ftp.login('anonymous')
+				ftp.cwd(os.path.dirname(infos.path))
+				ftp.retrbinary("RETR " + os.path.basename(infos.path), buffer.write)
+				payload = buffer.getvalue()
+				buffer.close()
+			else:
+				handler = urllib2.build_opener()
+				payload = handler.open(url, None, 60).read()
 		except Exception as error:
 			console.fail('HTTP fail %s (%s)' % (url, error))
 			return False
