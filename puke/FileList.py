@@ -123,7 +123,7 @@ class FileList:
 
 	def __explore(self, dir ):
 	    dir = os.path.abspath(dir)
-	    for file in [file for file in os.listdir(dir) if not file in [".",".."]]:
+	    for file in sorted([file for file in os.listdir(dir) if not file in [".",".."]]):
 	        nfile = os.path.join(dir,file)
 	        
 	        if os.path.isdir(nfile):

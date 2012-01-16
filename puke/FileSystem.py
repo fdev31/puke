@@ -130,13 +130,17 @@ def isdir(dirname):
     return True
 
 
-def writefile(dst, content, mtime = None):
+def writefile(dst, content, mtime = None, binary = False):
     # First test for existance of destination directory
     makedir(os.path.dirname(dst))
     
     # Open file handle and write
+    if binary:
+        mode = "wb"
+    else:
+        mode = "w"
     try:
-        handle = open(dst, mode="wb")
+        handle = open(dst, mode=mode)
         handle.write(content)
         handle.close()
     except Exception as e:
@@ -153,6 +157,15 @@ def abspath(path):
 
 def basename(path):
     return os.path.basename(path)
+
+def dirname(path):
+    return os.path.dirname(path)
+
+def normpath(path):
+    return os.path.normpath(path)
+
+def sep():
+    return os.sep
 
 def chown(path, uname = None, gname = None):
     isfile(path)
@@ -171,7 +184,7 @@ def chown(path, uname = None, gname = None):
 
     
     if uid == None or gid == None:
-        raise FileSystemError('Invalid uname or gname')
+        raise FileSystemError('CHOWN %s : Invalid uname or gname (%s->%s:%s->%s)' % (path, uname, uid, gname, gid))
 
     return os.chown(path, uid, gid)
 

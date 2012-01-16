@@ -318,12 +318,13 @@ def pack (file_list, output):
 
     console.confirm(" %s packed" % output)
 
-def unpack (pack_file, output, extract = None):
+def unpack (pack_file, output, extract = None, verbose=True):
     
     console.header( "- Unpacking %s to %s " % (pack_file, output))
 
     if not Compress.check(pack_file):
         console.error(" %s is not a valid pack" % output)
+        raise PukeError('%s is not a valid pack' % output)
         return
 
     comp = Compress.open(pack_file, "r")
@@ -347,8 +348,10 @@ def unpack (pack_file, output, extract = None):
 
         if exists(output_file) and os.path.getmtime(output_file) == infos.mtime:
             continue
-            
-        console.info(' + %s' % __pretty(output_file))
+        
+        if verbose == True:
+            console.info(' + %s' % __pretty(output_file))
+        
         writefile(output_file, data, mtime=infos.mtime)
 
         if infos.mode:
