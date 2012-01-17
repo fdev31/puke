@@ -363,6 +363,7 @@ def unpack (pack_file, output, extract = None, verbose=True):
     console.confirm(" %s unpacked in %s (%s files)" % (pack_file, output, count))
 
 ### WIP
+"""
 def __jasmine(files):
 
     System.check_package('java')
@@ -404,6 +405,7 @@ def __jasmine(files):
         console.confirm('  Tests success')
     else:
         console.fail("  Tests failure")
+"""
     
 def __replace(data, replace):
     for k in replace.keys():
