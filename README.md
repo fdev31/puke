@@ -15,6 +15,13 @@
       ' 
 </pre>      
 
+## Beware!
+
+This is mostly an experimental tool, built out of a growing displeasure having to work with existing similar softwares, and for the sole purpose of fitting *our* *specific* build needs.
+
+While giving puke an OSS license made sense, while the author is happy to work on it, and while it *might* suit you, it's quite likely that it won't, and that you would find yourself more satisfied with one of the other solution out there (rake and scons come to mind).
+
+
 ## Technology
 
 We are using python, and a homemade system named "puke". It's quite similar to rake, jake, jasy, scons, etc, except:
@@ -22,7 +29,7 @@ We are using python, and a homemade system named "puke". It's quite similar to r
 * it doesn't suck ass, unlike ruby
 * it installs painless, unlike ruby
 * it's extremely straightforward and does just a couple of simple things, avoiding both bloat and indigest documentation
-* it's python, so it's cool and sexy, unlike ruby
+* it's python, so it's cool and sexy, unlike ruby :)
 
 ## Features
 
@@ -49,12 +56,12 @@ Basic file manipulation, js linting via closure, minification via closure and YU
 
 There is two ways to get there.
 
-Either the recommended sandboxed way (using brew, for *MacOSX*), read 1a.
+Either the recommended sandboxed way (using brew, for *MacOSX*), read 1.
 
-Or the "system" way (MacOSX and Linux), read 1b.
+Or the "system" way (MacOSX and Linux), read 2.
 
-If you don't understand what I'm saying, you are on mac, so just follow 1a.
-If you do, then you already have a working python + easy_install environment, right? Move on to step 2.
+If you don't understand what I'm saying, you are on mac, so just follow 1.
+If you do, then you already have a working python + easy_install environment, right? Move on to step 3.
 
 ### 1. Sandboxed way
 
@@ -119,6 +126,15 @@ Whenever you want to upgrade to the latest version, just do it again
 <pre>pip install puke --upgrade</pre>
 
 Yeah, that's it.
+
+### Gotchas
+
+ * some puke functionalities require a working jre. Lion has one by default (does it?). Ubuntu fans might just do a:
+<pre>
+sudo aptitude install openjdk-7-jre
+</pre>
+
+ * if you happen to have libyaml-dev installed, you *need* to have python-dev as well. This is not a puke requirement, but a pyyaml gotcha actually.
 
 ### Oh, did I mentioned the BIG FAT WARNING MANU BUG?
 
@@ -617,6 +633,9 @@ Utils.deepmerge(a, b)
 >>> {'a': 1, 'b': {1: 1, 2: 7}, 'c': 3, 'd': {'z': [1, 2, 3]}}
 </pre>
 
+## License
+
+MIT license, see LICENSE file
 
 ## Guidelines
 
