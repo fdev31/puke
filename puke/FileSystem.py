@@ -29,7 +29,7 @@ def readfile(file):
         data = fh.read()
         fh.close()
     except Exception as e:
-        raise FileSystemError(e)
+        raise FileSystemError("%s : %s" % (e, file))
     finally:
         if fh:
             fh.close()

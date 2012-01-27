@@ -15,9 +15,11 @@ from puke.Cache import *
 
 class FileList:
 
+	__gExclude = ''
+
 	def __init__(self, dir, filter = "*", exclude = ""):
 		self.__list = []
-		self.__dir = dir
+		self.__dir = os.path.abspath(dir)
 		self.__filter = ""
 
 
@@ -33,7 +35,7 @@ class FileList:
 		self.__filter = self.__filter.strip('|')
 		self.__filter = re.compile(self.__filter)
 		
-		self.__exclude = ""
+		self.__exclude = FileList.__gExclude
 		for tmp_f in exclude.split(','):
 			tmp_f = tmp_f.strip(' ')
 			self.__exclude = "%s|(%s)" % (self.__exclude, fnmatch.translate(tmp_f))
@@ -44,6 +46,10 @@ class FileList:
 
 
 		self.__explore(dir)
+
+	@staticmethod
+	def addGlobalExclude(rule):
+		FileList.__gExclude = "%s|(%s)" % (FileList.__gExclude, fnmatch.translate(rule))
 
 	def merge (self, flist):
 		if isinstance(flist, FileList):

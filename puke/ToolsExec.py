@@ -4,6 +4,7 @@ import subprocess
 import signal, platform
 from puke.Console import *
 from puke.Std import *
+from puke.SSH import SSH
 
 
 
@@ -14,14 +15,16 @@ def alarm_handler(signum, frame):
     raise Alarm
 
 
-def sh (command, header = None, output = True, timeout = None, std = None):
+def sh (command, header = None, output = True, timeout = None, std = None, ssh=None):
 
     isWouinWouin = (platform.system() == 'Windows')
 
     if isinstance(command, list):
         command = " \n ".join(command)
-    
 
+    
+    if ssh and not isinstance(ssh, SSH):
+        console.fail('Bad ssh param. See SSH.')
 
 
     if header == None:
@@ -43,18 +46,24 @@ def sh (command, header = None, output = True, timeout = None, std = None):
     
 
     try:
-        executable = '/bin/bash'
-        command = "export PYTHONIOENCODING=utf-8;" + command
+
+        if not ssh:
+            executable = '/bin/bash'
+            command = "export PYTHONIOENCODING=utf-8;" + command
 
 
-        if isWouinWouin:
-            executable = None
-            command = "bash.exe -c '" + command.replace("'", "\\'") + "'"
-        
+            if isWouinWouin:
+                executable = None
+                command = "bash.exe -c '" + command.replace("'", "\\'") + "'"
+            
 
-        cProcess = subprocess.Popen(command, stdout = subprocess.PIPE, shell = True, stderr= subprocess.PIPE, executable=executable, env=os.environ)
-        (rStdout, rStderr) = cProcess.communicate()
-        code = cProcess.returncode
+            cProcess = subprocess.Popen(command, stdout = subprocess.PIPE, shell = True, stderr= subprocess.PIPE, executable=executable, env=os.environ)
+            (rStdout, rStderr) = cProcess.communicate()
+            code = cProcess.returncode
+        else:
+            isWouinWouin == False
+
+            (rStdout, rStderr, code) = ssh.execute(command)
 
         if not isWouinWouin:
             signal.alarm(0)

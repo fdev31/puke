@@ -19,6 +19,7 @@ from puke.Require import *
 from puke.Yak import *
 from puke.VirtualEnv import *
 from puke.Std import *
+from puke.SSH import SSH
 import puke.System
 import puke.FileSystem
 import puke.Utils
@@ -27,7 +28,7 @@ import puke.Utils
 VERSION = 0.1
 __all__ = [
             "main", "VERSION", "Error", "FileList", "Sed", "Std", "Env", "Require", "Yak", "VirtualEnv", "System", "FileSystem", "Utils",
-            "combine", "sh", "minify", "jslint", "jsdoc", "patch", "prompt", "deepcopy", "stats", "pack", "unpack", "hsizeof", "console"
+            "combine", "sh", "minify", "jslint", "jsdoc", "patch", "prompt", "deepcopy", "stats", "pack", "unpack", "hsizeof", "console", "SSH"
          ]
 
 
@@ -152,6 +153,18 @@ def run():
     except Exception as e:
         console.error('Closure linter not found %s' % e)
 
+    #
+    # Handle .pukeignore
+    #
+
+    if os.path.isfile('.pukeignore'):
+        try:
+            f = open('.pukeignore', 'r')
+
+            for line in f:
+                FileList.addGlobalExclude(line.strip())
+        except Exception as e:
+            console.warn('Puke ignore error : %s' % e)
 
     #
     # Find and execute build script
