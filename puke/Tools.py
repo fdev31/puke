@@ -102,6 +102,10 @@ def minify(in_file, out_file = None, verbose=False):
     
     console.info('  ~ Original: %.2f kB' % (org_size / 1024.0))
     console.info('  ~ Compressed: %.2f kB' % (new_size / 1024.0))
+    
+    if not org_size:
+        return
+
     console.confirm('  %s ( Reduction : %.1f%% )' % (out_file, (float(org_size - new_size) / org_size * 100)))
 
 
