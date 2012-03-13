@@ -4,6 +4,7 @@
 import os, logging
 import fnmatch, re
 import hashlib
+import stat
 
 
 
@@ -17,11 +18,11 @@ class FileList:
 
 	__gExclude = ''
 
-	def __init__(self, dir, filter = "*", exclude = ""):
+	def __init__(self, dir, filter = "*", exclude = "", ssh=None):
 		self.__list = []
 		self.__dir = os.path.abspath(dir)
 		self.__filter = ""
-
+		self.__ssh = ssh.open_sftp() if ssh is not None else False
 
 		if dir.startswith('http') or dir.startswith('ftp'):
 			self.__list.append((dir,''))
@@ -128,24 +129,37 @@ class FileList:
 		return result
 
 	def __explore(self, dir ):
-	    dir = os.path.abspath(dir)
-	    for file in sorted([file for file in os.listdir(dir) if not file in [".",".."]]):
-	        nfile = os.path.join(dir,file)
-	        
-	        if os.path.isdir(nfile):
-	            self.__explore(nfile)
-	        elif self.__filter.match(nfile) and not self.__exclude.match(nfile):
-	        	tmp = nfile.split(self.__dir)
-	        	if len(tmp) > 1:
-	        		nfile = self.__dir + tmp[1]
-	        	else:
-	        		nfile = tmp[0]
-	        	
-	        	
-	        	self.__list.append( (nfile, self.__dir))
+		if self.__ssh:
+			sftp = self.__ssh
+			dir = sftp.normalize(dir)
+			for file in sorted([file for file in sftp.listdir(dir) if not file in [".",".."]]):
+				nfile = os.path.join(dir,file)
+
+				if sftp.stat(nfile).st_mode & 040000: # isdir ?
+					self.__explore(nfile)
+				elif self.__filter.match(nfile) and not self.__exclude.match(nfile):
+					tmp = nfile.split(self.__dir)
+					if len(tmp) > 1:
+						nfile = self.__dir + tmp[1]
+					else:
+						nfile = tmp[0]
+
+					self.__list.append( (nfile, self.__dir))
+			return
+
+		dir = os.path.abspath(dir)
+		for file in sorted([file for file in os.listdir(dir) if not file in [".",".."]]):
+			nfile = os.path.join(dir,file)
+
+			if os.path.isdir(nfile):
+				self.__explore(nfile)
+			elif self.__filter.match(nfile) and not self.__exclude.match(nfile):
+				tmp = nfile.split(self.__dir)
+				if len(tmp) > 1:
+					nfile = self.__dir + tmp[1]
+				else:
+					nfile = tmp[0]
 
 
+				self.__list.append( (nfile, self.__dir))
 
-
-
-		       
